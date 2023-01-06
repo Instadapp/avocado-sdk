@@ -1,0 +1,41 @@
+{
+  "name": "avocado-safe",
+  "version": "0.0.1",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/avocado-safe.cjs",
+  "module": "./dist/avocado-safe.js",
+  "exports": {
+    ".": {
+      "import": "./dist/avocado-safe.js",
+      "require": "./dist/avocado-safe.umd.cjs"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
+    "@instadapp/avocado": "^0.0.13",
+    "@web3-react/abstract-connector": "^6.0.7",
+    "mitt": "^3.0.0",
+    "tiny-warning": "^1.0.3",
+    "vue": "^3.2.45"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.3",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "@web3-react/types": "^6.0.7",
+    "autoprefixer": "^10.4.13",
+    "postcss": "^8.4.20",
+    "tailwindcss": "^3.2.4",
+    "typescript": "^4.9.3",
+    "vite": "^4.0.0",
+    "vite-plugin-dts": "^1.7.1",
+    "vue-tsc": "^1.0.11"
+  }
+}
