@@ -1,5 +1,6 @@
 import { createSafe } from '@instadapp/avocado'
 import { Web3Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber } from '@ethersproject/bignumber'
 import { register } from "./customElement"
 import { bridge } from "./bridge"
 
@@ -37,7 +38,7 @@ export class AvocadoSafeProvider {
   #ethereum: any
   #chainId: number
 
-  constructor ({ chainId }: { chainId: number }) {
+  constructor({ chainId }: { chainId: number }) {
     this.#ethereum = window.ethereum
     const provider = new Web3Provider(window.ethereum)
 
@@ -45,7 +46,7 @@ export class AvocadoSafeProvider {
     this.#chainId = chainId
   }
 
-  async request (request: { method: string, params?: Array<any> }) {
+  async request(request: { method: string, params?: Array<any> }) {
     console.log({ request })
     if (request.method === 'eth_getBalance') {
       return '0x0de0b6b3a7640000' // get avo balance and convert it to eth/matic?
@@ -76,13 +77,23 @@ export class AvocadoSafeProvider {
       })
 
       return hash.hash
+    } else if (request.method === 'wallet_switchEthereumChain') {
+      if (!request.params) {
+        return;
+      }
+
+      let chainId =  BigNumber.from(request.params[0]).toNumber() 
+
+      if(chainId === 75) return;
+
+      this.#chainId = chainId
     }
 
     // return await this.#ethereum.request(request)
     return await getRpcProvider(this.#chainId).send(request.method, request.params || [])
   }
 
-  async #switchToAvoNetwork () {
+  async #switchToAvoNetwork() {
     try {
       await this.#ethereum.request({
         method: 'wallet_switchEthereumChain',
@@ -115,13 +126,13 @@ export class AvocadoSafeProvider {
     register()
   }
 
-  async enable () {
+  async enable() {
     this.#registerUiBridge();
 
     return await this.request({ method: 'eth_requestAccounts' })
   }
 
-  get safe (): ReturnType<typeof createSafe> {
+  get safe(): ReturnType<typeof createSafe> {
     return this.#safe
   }
 }
