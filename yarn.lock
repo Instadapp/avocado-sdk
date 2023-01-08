@@ -459,10 +459,10 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@instadapp/avocado@^0.0.13":
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/@instadapp/avocado/-/avocado-0.0.13.tgz#55c326fc2d56112b1022c0c06f41d3be7c5aab55"
-  integrity sha512-6zigJbvuBJgjZog9lFqZJ5E/ocHvXv8bheIuv/97wPMtt6Vz69FxKL2wBV9SUgHUiFQ2RIQabhxSyQb00Dna3A==
+"@instadapp/avocado@^0.0.14":
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/@instadapp/avocado/-/avocado-0.0.14.tgz#235aa7f0f33834dd09fe460f549818cd53b6e4dd"
+  integrity sha512-KBM5BESY5fSLv472BIi2GTtZs6r550Ea/UWOAzln0rX+vsK8MAhhxvaIZ/XYleEMI07IX5sLtG3RMjeeZ1eTZw==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
     "@ethersproject/abstract-provider" "^5.7.0"
