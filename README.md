@@ -1,18 +1,54 @@
-# Vue 3 + TypeScript + Vite
+# avocado-safe
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Usage
+Install package:
 
-## Recommended IDE Setup
+```sh
+# npm
+npm install avocado-safe
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+# yarn
+yarn add avocado-safe
 
-## Type Support For `.vue` Imports in TS
+# pnpm
+pnpm install avocado-safe
+```
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+Import:
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+```js
+// ESM
+import {} from "avocado-safe";
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+// CommonJS
+const {} = require("avocado-safe");
+```
+
+
+## Examples
+
+```ts
+import { AvocadoSafeProvider } from 'avocado-safe'
+import { ethers } from 'ethers'
+import Web3 from 'web3'
+
+const ethereum = new AvocadoSafeProvider({ chainId: 137 }) // window.etherem
+await ethereum.enable()
+
+const provider = new ethers.providers.Web3Provider(ethereum)
+const web3 = new Web3(ethereum)
+
+console.log(await provider.listAccounts())
+console.log(await provider.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
+console.log(await web3.eth.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
+```
+
+
+```ts
+import { AvocadoInjectedConnector } from 'avocado-safe'
+
+const avocado = new AvocadoInjectedConnector({ chainId: 137 })
+
+const { activate } = useWeb3() // web3-react v6 or @instadapp/vue-web3
+await activate(avocado)
+```
