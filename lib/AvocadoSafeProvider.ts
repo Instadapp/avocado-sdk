@@ -82,13 +82,12 @@ export class AvocadoSafeProvider {
         return;
       }
 
-      let chainId =  BigNumber.from(request.params[0]).toNumber() 
+      let chainId =  BigNumber.from(request.params[0].chainId).toNumber() 
 
       if(chainId === 75) return;
 
       this.#chainId = chainId
     }
-
     // return await this.#ethereum.request(request)
     return await getRpcProvider(this.#chainId).send(request.method, request.params || [])
   }
