@@ -3,6 +3,8 @@ import { Web3Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { register } from "./customElement"
 import { bridge } from "./bridge"
+import { EventEmitter } from 'events';
+
 
 declare global {
   interface Window {
@@ -31,7 +33,7 @@ export const getRpcProvider = (chainId: number | string) => {
   return rpcInstances[chainId]
 }
 
-export class AvocadoSafeProvider {
+export class AvocadoSafeProvider extends EventEmitter{
   isMetaMask: boolean = true
 
   #safe: ReturnType<typeof createSafe>
@@ -39,11 +41,17 @@ export class AvocadoSafeProvider {
   #chainId: number
 
   constructor({ chainId }: { chainId: number }) {
+    super();
+
     this.#ethereum = window.ethereum
     const provider = new Web3Provider(window.ethereum)
 
     this.#safe = createSafe(provider.getSigner())
     this.#chainId = chainId
+  }
+
+  getChainId(){
+    return this.#chainId;
   }
 
   async request(request: { method: string, params?: Array<any> }) {
@@ -87,6 +95,10 @@ export class AvocadoSafeProvider {
       if(chainId === 75) return;
 
       this.#chainId = chainId
+
+
+      this.emit("networkChanged", chainId)
+      this.emit("chainChanged", chainId)
 
       return null;
     }

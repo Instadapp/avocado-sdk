@@ -9,13 +9,13 @@ export type SendReturn = any
 export type Send = (method: string, params?: any[]) => Promise<SendReturnResult | SendReturn>
 export type SendOld = ({ method }: { method: string }) => Promise<SendReturnResult | SendReturn>
 
-function parseSendReturn (sendReturn: SendReturnResult | SendReturn): any {
+function parseSendReturn(sendReturn: SendReturnResult | SendReturn): any {
   // eslint-disable-next-line no-prototype-builtins
   return sendReturn.hasOwnProperty('result') ? sendReturn.result : sendReturn
 }
 
 export class NoEthereumProviderError extends Error {
-  public constructor () {
+  public constructor() {
     super()
     this.name = this.constructor.name
     this.message = 'No Ethereum provider was found on window.ethereum.'
@@ -23,7 +23,7 @@ export class NoEthereumProviderError extends Error {
 }
 
 export class UserRejectedRequestError extends Error {
-  public constructor () {
+  public constructor() {
     super()
     this.name = this.constructor.name
     this.message = 'The user rejected the request.'
@@ -32,12 +32,12 @@ export class UserRejectedRequestError extends Error {
 
 export class AvocadoInjectedConnector extends AbstractConnector {
   #provider?: AvocadoSafeProvider
-  #chainId: number
+  #initialChainId: number
 
-  constructor (kwargs: AbstractConnectorArguments & { chainId: number }) {
+  constructor(kwargs: AbstractConnectorArguments & { chainId: number }) {
     super(kwargs)
 
-    this.#chainId = kwargs.chainId
+    this.#initialChainId = kwargs.chainId
 
     // this.handleNetworkChanged = this.handleNetworkChanged.bind(this)
     // this.handleChainChanged = this.handleChainChanged.bind(this)
@@ -45,11 +45,11 @@ export class AvocadoInjectedConnector extends AbstractConnector {
     this.handleClose = this.handleClose.bind(this)
   }
 
-  private handleChainChanged (chainId: string | number): void {
+  private handleChainChanged(chainId: string | number): void {
     this.emitUpdate({ chainId, provider: window.ethereum })
   }
 
-  private handleAccountsChanged (accounts: string[]): void {
+  private handleAccountsChanged(accounts: string[]): void {
     if (accounts.length === 0) {
       this.emitDeactivate()
     } else {
@@ -57,26 +57,29 @@ export class AvocadoInjectedConnector extends AbstractConnector {
     }
   }
 
-  private handleClose (_code: number, _reason: string): void {
+  private handleClose(_code: number, _reason: string): void {
     this.emitDeactivate()
   }
 
-  private handleNetworkChanged (networkId: string | number): void {
+  private handleNetworkChanged(networkId: string | number): void {
     this.emitUpdate({ chainId: networkId, provider: window.ethereum })
   }
 
-  public async activate (): Promise<ConnectorUpdate> {
+  public async activate(): Promise<ConnectorUpdate> {
     if (!window.ethereum) {
       throw new NoEthereumProviderError()
     }
 
-    this.#provider = new AvocadoSafeProvider({ chainId: this.#chainId })
+    this.#provider = new AvocadoSafeProvider({ chainId: this.#initialChainId })
 
     if (window.ethereum.on) {
-      // window.ethereum.on('chainChanged', this.handleChainChanged)
       window.ethereum.on('accountsChanged', this.handleAccountsChanged)
       window.ethereum.on('close', this.handleClose)
-      // window.ethereum.on('networkChanged', this.handleNetworkChanged)
+    }
+
+    if(this.#provider.on) {
+      this.#provider.on('chainChanged', this.handleChainChanged)
+      this.#provider.on('networkChanged', this.handleNetworkChanged)
     }
 
     if ((window.ethereum as any).isMetaMask) {
@@ -105,15 +108,15 @@ export class AvocadoInjectedConnector extends AbstractConnector {
     return { provider: this.#provider, ...(account ? { account } : {}) }
   }
 
-  public async getProvider (): Promise<any> {
+  public async getProvider(): Promise<any> {
     return await this.#provider
   }
 
-  public async getChainId (): Promise<number | string> {
-    return await Promise.resolve(this.#chainId)
+  public async getChainId(): Promise<number | string> {
+    return await Promise.resolve(this.#provider ? this.#provider.getChainId() : this.#initialChainId)
   }
 
-  public async getAccount (): Promise<null | string> {
+  public async getAccount(): Promise<null | string> {
     if (!this.#provider) {
       throw new NoEthereumProviderError()
     }
@@ -121,16 +124,20 @@ export class AvocadoInjectedConnector extends AbstractConnector {
     return await this.#provider.safe.getSafeAddress()
   }
 
-  public deactivate () {
+  public deactivate() {
     if (window.ethereum && window.ethereum.removeListener) {
-      // window.ethereum.removeListener('chainChanged', this.handleChainChanged)
       window.ethereum.removeListener('accountsChanged', this.handleAccountsChanged)
       window.ethereum.removeListener('close', this.handleClose)
-      // window.ethereum.removeListener('networkChanged', this.handleNetworkChanged)
+    }
+
+
+    if(this.#provider && this.#provider.removeListener) {
+      this.#provider.removeListener('chainChanged', this.handleChainChanged)
+      this.#provider.removeListener('networkChanged', this.handleNetworkChanged)
     }
   }
 
-  public async isAuthorized (): Promise<boolean> {
+  public async isAuthorized(): Promise<boolean> {
     if (!this.#provider) {
       return false
     }
