@@ -13,6 +13,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "lib/AvocadoInjectedConnector.ts", "vite-env.d.ts", "vite-env.d.ts", "index.tss", "index.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "lib/**/*.ts", "vite-env.d.ts", "vite-env.d.ts", "index.tss", "index.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
