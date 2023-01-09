@@ -15,7 +15,7 @@ export default defineConfig({
       fileName: 'avocado-safe',
     },
     rollupOptions: {
-      external: ["@instadapp/avocado", "@ethersproject/providers", "@ethersproject/bignumber", "mitt", "vue", /@web3-react/],
+      external: ["@instadapp/avocado", "@ethersproject/providers", "@ethersproject/bignumber", "mitt", "vue", /@vue/, /@web3-react/],
       output: {
         // Provide global variables to use in the UMD build
         // for externalized deps

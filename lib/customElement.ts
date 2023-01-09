@@ -1,4 +1,4 @@
-import { defineCustomElement } from 'vue'
+import { defineCustomElement } from '@vue/runtime-dom'
 //@ts-ignore
 import App from './App.ce.vue'
 
