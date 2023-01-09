@@ -39,14 +39,14 @@ export class AvocadoInjectedConnector extends AbstractConnector {
 
     this.#initialChainId = kwargs.chainId
 
-    // this.handleNetworkChanged = this.handleNetworkChanged.bind(this)
-    // this.handleChainChanged = this.handleChainChanged.bind(this)
+    this.handleNetworkChanged = this.handleNetworkChanged.bind(this)
+    this.handleChainChanged = this.handleChainChanged.bind(this)
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this)
     this.handleClose = this.handleClose.bind(this)
   }
 
   private handleChainChanged(chainId: string | number): void {
-    this.emitUpdate({ chainId, provider: window.ethereum })
+    this.emitUpdate({ chainId, provider: this.#provider })
   }
 
   private handleAccountsChanged(accounts: string[]): void {
@@ -62,7 +62,7 @@ export class AvocadoInjectedConnector extends AbstractConnector {
   }
 
   private handleNetworkChanged(networkId: string | number): void {
-    this.emitUpdate({ chainId: networkId, provider: window.ethereum })
+    this.emitUpdate({ chainId: networkId, provider: this.#provider })
   }
 
   public async activate(): Promise<ConnectorUpdate> {
