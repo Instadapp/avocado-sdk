@@ -723,7 +723,7 @@
     "@vue/reactivity" "3.2.45"
     "@vue/shared" "3.2.45"
 
-"@vue/runtime-dom@3.2.45":
+"@vue/runtime-dom@3.2.45", "@vue/runtime-dom@^3.2.45":
   version "3.2.45"
   resolved "https://registry.yarnpkg.com/@vue/runtime-dom/-/runtime-dom-3.2.45.tgz#1a2ef6ee2ad876206fbbe2a884554bba2d0faf59"
   integrity sha512-cy88YpfP5Ue2bDBbj75Cb4bIEZUMM/mAkDMfqDTpUYVgTf/kuQ2VQ8LebuZ8k6EudgH8pYhsGWHlY0lcxlvTwA==

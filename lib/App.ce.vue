@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from '@vue/runtime-core';
+import { onMounted, onUnmounted, ref } from '@vue/runtime-dom';
 import { bridge } from './bridge';
 const show = ref(false)
 
