@@ -87,6 +87,8 @@ export class AvocadoSafeProvider {
       if(chainId === 75) return;
 
       this.#chainId = chainId
+
+      return null;
     }
     // return await this.#ethereum.request(request)
     return await getRpcProvider(this.#chainId).send(request.method, request.params || [])
