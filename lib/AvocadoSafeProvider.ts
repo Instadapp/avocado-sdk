@@ -33,12 +33,13 @@ export const getRpcProvider = (chainId: number | string) => {
   return rpcInstances[chainId]
 }
 
-export class AvocadoSafeProvider extends EventEmitter{
+export class AvocadoSafeProvider extends EventEmitter {
   isMetaMask: boolean = true
 
   #safe: ReturnType<typeof createSafe>
   #ethereum: any
   #chainId: number
+  #avoNetworkProvider: StaticJsonRpcProvider
 
   constructor({ chainId }: { chainId: number }) {
     super();
@@ -48,16 +49,18 @@ export class AvocadoSafeProvider extends EventEmitter{
 
     this.#safe = createSafe(provider.getSigner())
     this.#chainId = chainId
+    this.#avoNetworkProvider = getRpcProvider(75)
   }
 
-  getChainId(){
+  getChainId() {
     return this.#chainId;
   }
 
   async request(request: { method: string, params?: Array<any> }) {
-    console.log({ request })
     if (request.method === 'eth_getBalance') {
-      return '0x0de0b6b3a7640000' // get avo balance and convert it to eth/matic?
+      const usdcBalance = await this.#avoNetworkProvider.getBalance(await this.#safe.getOwnerddress())
+
+      return usdcBalance.toHexString() // convert it to eth/matic/avax
     } else if (request.method === 'eth_requestAccounts') {
       await this.#ethereum.request(request)
 
@@ -90,9 +93,9 @@ export class AvocadoSafeProvider extends EventEmitter{
         return;
       }
 
-      let chainId =  BigNumber.from(request.params[0].chainId).toNumber() 
+      let chainId = BigNumber.from(request.params[0].chainId).toNumber()
 
-      if(chainId === 75) return;
+      if (chainId === 75) return;
 
       this.#chainId = chainId
 
