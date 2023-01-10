@@ -17,7 +17,7 @@ export const RPC_URLS: { [chainId: number]: string } = {
   43114: 'https://rpc.ankr.com/avalanche',
   250: 'https://rpc.ankr.com/fantom',
   10: 'https://rpc.ankr.com/optimism',
-  42161: 'https://rpc.ankr.com/arbitrum',
+  42161: 'https://arb1.arbitrum.io/rpc',
   75: 'https://rpc.avocado.link',
   100: 'https://rpc.ankr.com/gnosis',
   56: 'https://rpc.ankr.com/bsc'
