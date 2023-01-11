@@ -15,7 +15,7 @@ export default defineConfig({
       fileName: 'avocado-safe',
     },
     rollupOptions: {
-      external: ["@instadapp/avocado", "@ethersproject/providers", "@ethersproject/bignumber", /@vue/, /@web3-react/],
+      external: [/@ethersproject/, "ethers", /@vue/, /@web3-react/],
     },
   }
 })

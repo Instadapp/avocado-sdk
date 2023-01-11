@@ -1,8 +1,9 @@
-import { createSafe } from '@instadapp/avocado'
+import { createSafe } from './signer'
 import { Web3Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { register } from "./customElement"
 import { bridge } from "./bridge"
+import { getRpcProvider } from "./providers"
 import { EventEmitter } from 'events';
 
 
@@ -10,27 +11,6 @@ declare global {
   interface Window {
     ethereum: any
   }
-}
-export const RPC_URLS: { [chainId: number]: string } = {
-  1: 'https://rpc.ankr.com/eth',
-  137: 'https://rpc.ankr.com/polygon',
-  43114: 'https://rpc.ankr.com/avalanche',
-  250: 'https://rpc.ankr.com/fantom',
-  10: 'https://rpc.ankr.com/optimism',
-  42161: 'https://arb1.arbitrum.io/rpc',
-  75: 'https://rpc.avocado.link',
-  100: 'https://rpc.ankr.com/gnosis',
-  56: 'https://rpc.ankr.com/bsc'
-}
-
-const rpcInstances: Record<string, StaticJsonRpcProvider> = {}
-
-export const getRpcProvider = (chainId: number | string) => {
-  if (!rpcInstances[chainId]) {
-    rpcInstances[chainId] = new StaticJsonRpcProvider(RPC_URLS[Number(chainId)])
-  }
-
-  return rpcInstances[chainId]
 }
 
 export class AvocadoSafeProvider extends EventEmitter {
@@ -45,7 +25,7 @@ export class AvocadoSafeProvider extends EventEmitter {
     super();
 
     this.#ethereum = window.ethereum
-    const provider = new Web3Provider(window.ethereum)
+    const provider = new Web3Provider(window.ethereum, "any")
 
     this.#safe = createSafe(provider.getSigner())
     this.#chainId = chainId

@@ -35,7 +35,7 @@ import Web3 from 'web3'
 const ethereum = new AvocadoSafeProvider({ chainId: 137 }) // window.etherem
 await ethereum.enable()
 
-const provider = new ethers.providers.Web3Provider(ethereum)
+const provider = new ethers.providers.Web3Provider(ethereum, "any")
 const web3 = new Web3(ethereum)
 
 console.log(await provider.listAccounts())

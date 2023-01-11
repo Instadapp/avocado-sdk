@@ -1,6 +1,6 @@
 {
   "name": "avocado-safe",
-  "version": "0.0.26",
+  "version": "0.0.28",
   "type": "module",
   "files": [
     "dist"
@@ -15,15 +15,18 @@
     }
   },
   "scripts": {
+    "generate:contracts": "rimraf src/contracts && typechain --target=ethers-v5 'abi/*.json' --out-dir 'src/contracts'",
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
-    "@instadapp/avocado": "^0.0.17",
+    "@ethersproject/solidity": "^5.7.0",
     "@vue/runtime-dom": "^3.2.45",
     "@web3-react/abstract-connector": "^6.0.7",
+    "ethers": "^5.7.2",
     "events": "^3.3.0",
     "mitt": "^3.0.0",
     "tiny-warning": "^1.0.3"
