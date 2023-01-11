@@ -1,6 +1,6 @@
 import { defineCustomElement } from '@vue/runtime-dom'
 //@ts-ignore
-import App from './App.ce.vue'
+import App from './ui/App.ce.vue'
 
 const AvocadoSafeElement = defineCustomElement(App)
 

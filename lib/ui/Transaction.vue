@@ -1,36 +1,18 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from '@vue/runtime-dom';
-import { bridge } from './bridge';
-const show = ref(false)
+import { ref } from '@vue/runtime-dom';
+defineProps<{ transaction: string }>()
+const emit = defineEmits(['confirm'])
 
 const gasLimit = ref(8_000_000)
 
-bridge.onRequest("sendTransaction", (rawTx) => {
-    show.value = true
-})
-
-const onTransaction = (rawTx: any) => {
-    show.value = true
-}
 const confirm = () => {
-    bridge.response("sendTransaction", {
+    emit('confirm', {
         gasLimit: gasLimit.value
     })
-
-    show.value = false
 }
-
-onMounted(() => {
-    bridge.onRequest("sendTransaction", onTransaction)
-})
-
-onUnmounted(() => {
-    bridge.offRequest("sendTransaction", onTransaction)
-})
 </script>
-
 <template>
-    <div v-if="show" class="relative z-[9999999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="relative z-[9999999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
         <div class="fixed inset-0 z-[9999999] overflow-y-auto">
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -63,10 +45,3 @@ onUnmounted(() => {
         </div>
     </div>
 </template>
-
-
-<style lang="postcss" scoped>
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-</style>
