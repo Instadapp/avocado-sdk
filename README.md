@@ -54,6 +54,33 @@ await activate(avocado)
 ```
 
 ```ts
+import { AvocadoSafeProvider } from 'avocado-safe'
+
+const providerOptions = {
+    'custom-avocado': {
+      display: {
+        logo: SVGavocado,
+        name: 'Avocado',
+        description: '',
+      },
+      package: AvocadoSafeProvider,
+
+      options: {
+        chainId: 137,
+      },
+
+      connector: async (ProviderPackage, options) => {
+        const provider = new ProviderPackage(options)
+
+        await provider.enable()
+
+        return provider
+      },
+    }
+}
+
+
+```ts
 const { createSafe } = require('@instadapp/avocado')
 
 // Should be connected to chainId 75 (https://rpc.avocado.link), before doing any transaction
