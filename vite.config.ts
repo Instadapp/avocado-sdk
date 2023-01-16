@@ -9,7 +9,7 @@ export default defineConfig({
   build: {
     lib: {
       formats: ["es", 'cjs'],
-      entry: resolve(__dirname, 'lib/index.ts'),
+      entry: resolve(__dirname, 'src/index.ts'),
       name: 'AvocadoSafe',
       // the proper extensions will be added
       fileName: 'avocado-safe',

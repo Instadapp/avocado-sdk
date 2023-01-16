@@ -12,7 +12,7 @@ const forwardsInstances: Record<number, Forwarder> = {}
 
 export const getForwarderContract = (chainId: number) => {
   if (!forwardsInstances[chainId]) {
-    forwardsInstances[chainId] = Forwarder__factory.connect('0x52f30c01795e84e5c12fa29345f1274d517FB865', getRpcProvider(chainId))
+    forwardsInstances[chainId] = Forwarder__factory.connect('0x375F6B0CD12b34Dc28e34C26853a37012C24dDE5', getRpcProvider(chainId))
   }
 
   return forwardsInstances[chainId]
@@ -83,7 +83,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const forwarder = getForwarderContract(chainId)
 
-    const gswNonce = await forwarder.gswNonce(owner).then(String)
+    const gswNonce = await forwarder.avoSafeNonce(owner).then(String)
 
     const signatureData = {
       actions: [
@@ -163,7 +163,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const forwarder = getForwarderContract(chainId)
 
-    const gswNonce = await forwarder.gswNonce(owner).then(String)
+    const gswNonce = await forwarder.avoSafeNonce(owner).then(String)
 
     const signatureData = {
       actions: transactions.map(transaction => (
@@ -260,8 +260,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
       version = await this._gaslessWallet!.DOMAIN_SEPARATOR_VERSION()
       name = await this._gaslessWallet!.DOMAIN_SEPARATOR_NAME()
     } catch (error) {
-      version = await forwarder.gswVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
-      name = await forwarder.gswVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+      version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+      name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
     }
 
     // Creating domain for signing using gasless wallet address as the verifying contract
