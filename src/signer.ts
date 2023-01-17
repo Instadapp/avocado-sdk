@@ -83,7 +83,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const forwarder = getForwarderContract(chainId)
 
-    const gswNonce = await forwarder.avoSafeNonce(owner).then(String)
+    const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
 
     const signatureData = {
       actions: [
@@ -95,7 +95,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       ],
       metadata: options && options.metadata ? options.metadata : '0x',
       source: options && options.source ? options.source : '0x0000000000000000000000000000000000000001',
-      gswNonce,
+      avoSafeNonce,
       validUntil: options && options.validUntil ? options.validUntil : '0',
       gas: transaction.gasLimit ? transaction.gasLimit.toString() : '8000000'
     }
@@ -163,7 +163,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const forwarder = getForwarderContract(chainId)
 
-    const gswNonce = await forwarder.avoSafeNonce(owner).then(String)
+    const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
 
     const signatureData = {
       actions: transactions.map(transaction => (
@@ -175,7 +175,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       )),
       metadata: options && options.metadata ? options.metadata : '0x',
       source: options && options.source ? options.source : '0x0000000000000000000000000000000000000001',
-      gswNonce,
+      avoSafeNonce,
       validUntil: options && options.validUntil ? options.validUntil : '0',
       gas: transactions.reduce((acc, curr) => {
         return acc.add(curr.gasLimit ? curr.gasLimit.toString() : '8000000')
@@ -246,9 +246,9 @@ class AvoSigner extends Signer implements TypedDataSigner {
     gas,
     source,
     metadata,
-    gswNonce
+    avoSafeNonce
     , chainId
-  }: { chainId: number, validUntil: string, metadata: string, gswNonce: string, source: string, gas: string, actions: any[] }): Promise<string> {
+  }: { chainId: number, validUntil: string, metadata: string, avoSafeNonce: string, source: string, gas: string, actions: any[] }): Promise<string> {
     await this.syncAccount()
 
     let name = 'Instadapp-Gasless-Smart-Wallet'
@@ -281,7 +281,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
         { name: 'gas', type: 'uint256' },
         { name: 'source', type: 'address' },
         { name: 'metadata', type: 'bytes' },
-        { name: 'gswNonce', type: 'uint256' }
+        { name: 'avoSafeNonce', type: 'uint256' }
       ],
       Action: [
         { name: 'target', type: 'address' },
@@ -297,7 +297,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       gas,
       source,
       metadata,
-      gswNonce
+      avoSafeNonce
     }
 
     return await this._signTypedData(domain, types, value)
