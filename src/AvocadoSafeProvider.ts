@@ -29,7 +29,7 @@ export class AvocadoSafeProvider extends EventEmitter {
 
     this.#safe = createSafe(provider.getSigner())
     this.#chainId = chainId
-    this.#avoNetworkProvider = getRpcProvider(75)
+    this.#avoNetworkProvider = getRpcProvider(634)
   }
 
   getChainId() {
@@ -75,7 +75,7 @@ export class AvocadoSafeProvider extends EventEmitter {
 
       let chainId = BigNumber.from(request.params[0].chainId).toNumber()
 
-      if (chainId === 75) return;
+      if (chainId === 634) return;
 
       this.#chainId = chainId
 

@@ -34,7 +34,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   constructor (readonly signer: Signer, readonly provider = signer.provider) {
     super()
     this._polygonForwarder = getForwarderContract(137)
-    this._avoProvider = getRpcProvider(75)
+    this._avoProvider = getRpcProvider(634)
   }
 
   async _signTypedData (domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
@@ -69,8 +69,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async sendTransaction (transaction: Deferrable<TransactionRequest>, options?: SignatureOption): Promise<TransactionResponse> {
     await this.syncAccount()
 
-    if (await this._chainId !== 75) {
-      throw new Error('Signer provider chain id should be 75')
+    if (await this._chainId !== 634) {
+      throw new Error('Signer provider chain id should be 634')
     }
 
     const chainId: number | undefined = this.customChainId || (await transaction.chainId)
@@ -149,8 +149,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async sendTransactions (transactions: Deferrable<TransactionRequest>[], targetChainId: Deferrable<number>, options?: SignatureOption): Promise<TransactionResponse> {
     await this.syncAccount()
 
-    if (await this._chainId !== 75) {
-      throw new Error('Signer provider chain id should be 75')
+    if (await this._chainId !== 634) {
+      throw new Error('Signer provider chain id should be 634')
     }
 
     const chainId: number | undefined = this.customChainId || (await targetChainId)
@@ -268,7 +268,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const domain = {
       name,
       version,
-      chainId: '75',
+      chainId: '634',
       salt: keccak256(['uint256'], [chainId]),
       verifyingContract: await this.getAddress()
     }
