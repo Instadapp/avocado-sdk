@@ -2,10 +2,10 @@
 import { onMounted, onUnmounted, ref } from '@vue/runtime-dom';
 import { bridge } from '../bridge';
 import Transaction from './Transaction.vue';
-const transaction = ref(null)
+const transactionData = ref(null)
 
-const onTransaction = (rawTx: any) => {
-    transaction.value = rawTx
+const onTransaction = (data: any) => {
+    transactionData.value = data
 }
 
 bridge.onRequest("sendTransaction", onTransaction)
@@ -13,7 +13,7 @@ bridge.onRequest("sendTransaction", onTransaction)
 const confirmTransaction = (data: any) => {
     bridge.response("sendTransaction", data)
 
-    transaction.value = null
+    transactionData.value = null
 }
 
 onMounted(() => {
@@ -26,7 +26,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Transaction v-if="transaction" :transaction="transaction" @confirm="confirmTransaction" />
+    <Transaction v-if="transactionData" :data="transactionData" @confirm="confirmTransaction" />
 </template>
 
 

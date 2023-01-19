@@ -31,13 +31,13 @@ class AvoSigner extends Signer implements TypedDataSigner {
   private _chainId: Promise<number> | undefined
   public customChainId: number | undefined
 
-  constructor (readonly signer: Signer, readonly provider = signer.provider) {
+  constructor(readonly signer: Signer, readonly provider = signer.provider) {
     super()
     this._polygonForwarder = getForwarderContract(137)
     this._avoProvider = getRpcProvider(634)
   }
 
-  async _signTypedData (domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
+  async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
     if ('_signTypedData' in this.signer) {
       // @ts-ignore
       return await this.signer._signTypedData(domain, types, value)
@@ -46,7 +46,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     throw new Error('_signTypedData is not supported')
   }
 
-  async syncAccount (): Promise<void> {
+  async syncAccount(): Promise<void> {
     if (!this._gaslessWallet) {
       const owner = await this.getOwnerAddress()
       const safeAddress = await this._polygonForwarder.computeAddress(owner)
@@ -57,115 +57,29 @@ class AvoSigner extends Signer implements TypedDataSigner {
     if (this.provider) { this._chainId = this.provider.getNetwork().then(net => net.chainId) }
   }
 
-  async getAddress (): Promise<string> {
+  async getAddress(): Promise<string> {
     await this.syncAccount()
     return this._gaslessWallet!.address
   }
 
-  async getOwnerAddress (): Promise<string> {
+  async getOwnerAddress(): Promise<string> {
     return await this.signer.getAddress()
   }
 
-  async sendTransaction (transaction: Deferrable<TransactionRequest>, options?: SignatureOption): Promise<TransactionResponse> {
+  async generateSignatureMessage(transactions: Deferrable<TransactionRequest>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
 
     if (await this._chainId !== 634) {
       throw new Error('Signer provider chain id should be 634')
     }
 
-    const chainId: number | undefined = this.customChainId || (await transaction.chainId)
-
-    if (!chainId) {
-      throw new Error('Chain ID is required')
-    }
-
     const owner = await this.getOwnerAddress()
 
-    const forwarder = getForwarderContract(chainId)
+    const forwarder = getForwarderContract(targetChainId)
 
     const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
-
-    const signatureData = {
-      actions: [
-        {
-          target: transaction.to,
-          data: transaction.data || '0x',
-          value: transaction.value ? transaction.value.toString() : '0'
-        }
-      ],
-      metadata: options && options.metadata ? options.metadata : '0x',
-      source: options && options.source ? options.source : '0x0000000000000000000000000000000000000001',
-      avoSafeNonce,
-      validUntil: options && options.validUntil ? options.validUntil : '0',
-      gas: transaction.gasLimit ? transaction.gasLimit.toString() : '8000000'
-    }
-
-    const signature = await this._buildValidSignature({
-      ...signatureData,
-      chainId
-    })
-
-    const transactionHash = await this._avoProvider.send('txn_broadcast', [
-      signature,
-      signatureData,
-      owner,
-      String(chainId),
-      false
-    ])
-
-    if (transactionHash === '0x') {
-      throw new Error('Tx failed!')
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    let tx = await getRpcProvider(chainId).getTransaction(transactionHash)
-
-    if (!tx) {
-      tx = await new Promise(resolve => setTimeout(resolve, 2000))
-    }
-
-    if (!tx) {
-      tx = await new Promise(resolve => setTimeout(resolve, 2000))
-    }
-
-    if (tx) { return tx }
 
     return {
-      from: owner,
-      nonce: 0,
-      confirmations: 0,
-      chainId,
-      data: '0x',
-      gasLimit: BigNumber.from(0),
-      value: BigNumber.from(0),
-      hash: transactionHash,
-      wait: async (confirmations?: number) => {
-        return await getRpcProvider(chainId).waitForTransaction(transactionHash, confirmations || 0)
-      }
-    }
-  }
-
-  async sendTransactions (transactions: Deferrable<TransactionRequest>[], targetChainId: Deferrable<number>, options?: SignatureOption): Promise<TransactionResponse> {
-    await this.syncAccount()
-
-    if (await this._chainId !== 634) {
-      throw new Error('Signer provider chain id should be 634')
-    }
-
-    const chainId: number | undefined = this.customChainId || (await targetChainId)
-
-    if (!chainId) {
-      throw new Error('Chain ID is required')
-    }
-
-    const owner = await this.getOwnerAddress()
-
-    const forwarder = getForwarderContract(chainId)
-
-    const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
-
-    const signatureData = {
       actions: transactions.map(transaction => (
         {
           target: transaction.to,
@@ -181,6 +95,28 @@ class AvoSigner extends Signer implements TypedDataSigner {
         return acc.add(curr.gasLimit ? curr.gasLimit.toString() : '8000000')
       }, BigNumber.from(0)).toString()
     }
+  }
+
+  async sendTransaction(transaction: Deferrable<TransactionRequest>, options?: SignatureOption): Promise<TransactionResponse> {
+    return await this.sendTransactions([transaction], await transaction.chainId, options);
+  }
+
+  async sendTransactions(transactions: Deferrable<TransactionRequest>[], targetChainId?: Deferrable<number>, options?: SignatureOption): Promise<TransactionResponse> {
+    await this.syncAccount()
+
+    if (await this._chainId !== 634) {
+      throw new Error('Signer provider chain id should be 634')
+    }
+
+    const chainId: number | undefined = this.customChainId || (await targetChainId)
+
+    if (!chainId) {
+      throw new Error('Chain ID is required')
+    }
+
+    const owner = await this.getOwnerAddress()
+
+    const signatureData = await this.generateSignatureMessage(transactions, chainId, options);
 
     const signature = await this._buildValidSignature({
       ...signatureData,
@@ -228,19 +164,19 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
   }
 
-  signMessage (_message: any): Promise<string> {
+  signMessage(_message: any): Promise<string> {
     throw new Error('Method not implemented.')
   }
 
-  signTransaction (_transaction: any): Promise<string> {
+  signTransaction(_transaction: any): Promise<string> {
     throw new Error('Method not implemented.')
   }
 
-  connect (_provider: Provider): Signer {
+  connect(_provider: Provider): Signer {
     return this
   }
 
-  async _buildValidSignature ({
+  async _buildValidSignature({
     actions,
     validUntil,
     gas,
@@ -304,7 +240,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 }
 
-export function createSafe (signer: Signer, provider = signer.provider) {
+export function createSafe(signer: Signer, provider = signer.provider) {
   if (!provider) {
     throw new Error('Provider')
   }
@@ -315,24 +251,28 @@ export function createSafe (signer: Signer, provider = signer.provider) {
   )
 
   return {
-    getSigner () {
+    getSigner() {
       return avoSigner
     },
 
-    async sendTransactions (transactions: Deferrable<TransactionRequest>[], targetChainId: number): Promise<TransactionResponse> {
+    async generateSignatureMessage(transactions: Deferrable<TransactionRequest>[], targetChainId: number) {
+      return await avoSigner.generateSignatureMessage(transactions, targetChainId)
+    },
+
+    async sendTransactions(transactions: Deferrable<TransactionRequest>[], targetChainId: number): Promise<TransactionResponse> {
       return await avoSigner.sendTransactions(transactions, targetChainId)
     },
 
-    async sendTransaction (transaction: Deferrable<TransactionRequest>, targetChainId?: number): Promise<TransactionResponse> {
+    async sendTransaction(transaction: Deferrable<TransactionRequest>, targetChainId?: number): Promise<TransactionResponse> {
       return await avoSigner.sendTransaction({
         ...transaction,
         chainId: targetChainId || await transaction.chainId
       })
     },
 
-    getSignerForChainId (chainId: number | string) {
+    getSignerForChainId(chainId: number | string) {
       return new Proxy(avoSigner, {
-        get (target, p, receiver) {
+        get(target, p, receiver) {
           if (p === 'customChainId') {
             return Number(chainId)
           }
@@ -342,11 +282,11 @@ export function createSafe (signer: Signer, provider = signer.provider) {
       })
     },
 
-    async getOwnerddress () {
+    async getOwnerddress() {
       return await signer.getAddress()
     },
 
-    async getSafeAddress () {
+    async getSafeAddress() {
       return await avoSigner.getAddress()
     }
   }
