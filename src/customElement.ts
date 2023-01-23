@@ -13,3 +13,9 @@ export function register() {
         document.body.appendChild(new AvocadoSafeElement())
     }
 }
+
+export function unregister() {
+    document.querySelectorAll('avocado-safe-element').forEach((element) => {
+        element.remove()
+    })
+}

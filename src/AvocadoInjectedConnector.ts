@@ -135,6 +135,10 @@ export class AvocadoInjectedConnector extends AbstractConnector {
       this.#provider.removeListener('chainChanged', this.handleChainChanged)
       this.#provider.removeListener('networkChanged', this.handleNetworkChanged)
     }
+
+    if(this.#provider) {
+      this.#provider.dispose()
+    }
   }
 
   public async isAuthorized(): Promise<boolean> {

@@ -1,7 +1,7 @@
 import { createSafe } from './signer'
 import { Web3Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
-import { register } from "./customElement"
+import { register, unregister } from "./customElement"
 import { bridge } from "./bridge"
 import { getRpcProvider } from "./providers"
 import { EventEmitter } from 'events';
@@ -142,6 +142,10 @@ export class AvocadoSafeProvider extends EventEmitter {
     bridge.setAvocadoSafeProvider(this)
 
     return accounts;
+  }
+
+  async dispose() {
+    unregister()
   }
 
   get safe(): ReturnType<typeof createSafe> {
