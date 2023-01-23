@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from '@vue/runtime-dom';
 defineProps<{ data: any }>()
-const emit = defineEmits(['confirm'])
+const emit = defineEmits(['confirm', 'cancel'])
 
 const gasLimit = ref(8_000_000)
 
@@ -10,14 +10,19 @@ const confirm = () => {
         gasLimit: gasLimit.value
     })
 }
+
+const cancel = () => {
+    emit('cancel')
+}
 </script>
 <template>
     <div class="relative z-[9999999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="cancel"></div>
         <div class="fixed inset-0 z-[9999999] overflow-y-auto">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="cancel"></div>
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                 <div
-                    class="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
+                    class="relative transform overflow-hidden rounded-7.5 p-7.5 bg-gray-950 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
                     <div>
                         <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                             <!-- Heroicon name: outline/check -->
@@ -34,13 +39,13 @@ const confirm = () => {
                             </div>
                         </div>
 
-                        <div>
+                        <div class="text-white p-4">
                             <pre>{{ data }}</pre>
                         </div>
                     </div>
                     <div class="mt-5 sm:mt-6">
                         <button type="button" @click="confirm"
-                            class="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm">
+                            class="inline-flex w-full justify-center rounded-7.5 border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm">
                             Confirm
                         </button>
                     </div>

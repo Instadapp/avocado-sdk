@@ -55,7 +55,9 @@ export class AvocadoSafeProvider extends EventEmitter {
         return '0x'
       }
 
-      const { gasLimit } = await bridge.request('sendTransaction', {
+      await this.#switchToAvoNetwork()
+
+      const response = await bridge.request('sendTransaction', {
           raw: request.params[0],
           chainId: this.#chainId,
           signer: await this.#safe.getOwnerddress(),
@@ -64,7 +66,11 @@ export class AvocadoSafeProvider extends EventEmitter {
           ], this.#chainId)
       })
 
-      await this.#switchToAvoNetwork()
+      if(! response) {
+        throw Error("Transaction cancelled")
+      }
+
+      const { gasLimit } = response
 
       const hash = await this.#safe.sendTransaction({
         ...request.params[0],
@@ -98,7 +104,7 @@ export class AvocadoSafeProvider extends EventEmitter {
     try {
       await this.#ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x4b' }]
+        params: [{ chainId: '0x27a' }]
       })
     } catch (switchError: any) {
       if (switchError.code === 4902) {
@@ -107,6 +113,7 @@ export class AvocadoSafeProvider extends EventEmitter {
             method: 'wallet_addEthereumChain',
             params: [
               {
+                chainId: '0x27a',
                 chainName: 'Avocado Network',
                 nativeCurrency: {
                   name: 'Avocado',
@@ -130,7 +137,11 @@ export class AvocadoSafeProvider extends EventEmitter {
   async enable() {
     this.#registerUiBridge();
 
-    return await this.request({ method: 'eth_requestAccounts' })
+    const accounts =  await this.request({ method: 'eth_requestAccounts' })
+
+    bridge.setAvocadoSafeProvider(this)
+
+    return accounts;
   }
 
   get safe(): ReturnType<typeof createSafe> {

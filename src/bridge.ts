@@ -1,7 +1,12 @@
 import mitt from 'mitt'
+import { AvocadoSafeProvider } from './AvocadoSafeProvider';
 
 class Bridge {
     bus = mitt()
+
+    setAvocadoSafeProvider(provider: AvocadoSafeProvider) {
+        this.bus.emit("AvocadoSafeProvider", provider)
+    }
 
     request(type: string, data: any) {
         return new Promise<any>((resolve) => {
