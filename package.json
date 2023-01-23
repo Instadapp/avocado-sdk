@@ -1,6 +1,6 @@
 {
   "name": "avocado-safe",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "type": "module",
   "files": [
     "dist"

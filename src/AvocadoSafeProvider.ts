@@ -148,6 +148,14 @@ export class AvocadoSafeProvider extends EventEmitter {
     unregister()
   }
 
+  async disconnect() {
+    this.dispose()
+  }
+
+  async close() {
+    this.dispose()
+  }
+
   get safe(): ReturnType<typeof createSafe> {
     return this.#safe
   }
