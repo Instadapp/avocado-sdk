@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref } from '@vue/runtime-dom';
 import { bridge } from '../bridge';
 import Transaction from './Transaction.vue';
-import Widget from './Widget.vue';
+// import Widget from './Widget.vue';
 
 const transactionData = ref(null)
 
@@ -35,13 +35,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Transaction v-if="transactionData" :data="transactionData" @confirm="confirmTransaction" @cancel="cancelTransaction" />
+    <div class="font-sans">
+        <Transaction v-if="transactionData" :data="transactionData" @confirm="confirmTransaction"
+            @cancel="cancelTransaction" />
 
-    <Widget /> 
+        <!-- <Widget /> -->
+    </div>
 </template>
 
 
 <style lang="postcss">
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
