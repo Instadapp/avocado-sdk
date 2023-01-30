@@ -75,6 +75,11 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const owner = await this.getOwnerAddress()
 
+    console.log({
+      owner,
+      targetChainId,
+    })
+
     const forwarder = getForwarderContract(targetChainId)
 
     const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)

@@ -1,4 +1,4 @@
-import { AvocadoSafeProvider } from "./src"
+import { AvocadoSafeProvider, createSafe } from "./src"
 
 const provider = new AvocadoSafeProvider({ chainId: 137 })
 
