@@ -69,9 +69,9 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async generateSignatureMessage(transactions: Deferrable<TransactionRequest>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
 
-    if (await this._chainId !== 634) {
-      throw new Error('Signer provider chain id should be 634')
-    }
+    // if (await this._chainId !== 634) {
+    //   throw new Error('Signer provider chain id should be 634')
+    // }
 
     const owner = await this.getOwnerAddress()
 
