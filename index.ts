@@ -23,3 +23,8 @@ document.querySelector("#app button")!.addEventListener('click', async () => {
         ]
     })
 })
+
+provider.request({
+    method: "eth_getBalance",
+    params: ["0x910E413DBF3F6276Fe8213fF656726bDc142E08E", "latest"]
+}).then(console.log)
