@@ -24,10 +24,14 @@ export interface GaslessWalletInterface extends utils.Interface {
   functions: {
     "DOMAIN_SEPARATOR_NAME()": FunctionFragment;
     "DOMAIN_SEPARATOR_VERSION()": FunctionFragment;
+    "avoSafeNonce(address)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "DOMAIN_SEPARATOR_NAME" | "DOMAIN_SEPARATOR_VERSION"
+    nameOrSignatureOrTopic:
+      | "DOMAIN_SEPARATOR_NAME"
+      | "DOMAIN_SEPARATOR_VERSION"
+      | "avoSafeNonce"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -38,6 +42,10 @@ export interface GaslessWalletInterface extends utils.Interface {
     functionFragment: "DOMAIN_SEPARATOR_VERSION",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "avoSafeNonce",
+    values: [PromiseOrValue<string>]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR_NAME",
@@ -45,6 +53,10 @@ export interface GaslessWalletInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR_VERSION",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "avoSafeNonce",
     data: BytesLike
   ): Result;
 
@@ -81,16 +93,31 @@ export interface GaslessWallet extends BaseContract {
     DOMAIN_SEPARATOR_NAME(overrides?: CallOverrides): Promise<[string]>;
 
     DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<[string]>;
+
+    avoSafeNonce(
+      owner_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
   };
 
   DOMAIN_SEPARATOR_NAME(overrides?: CallOverrides): Promise<string>;
 
   DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<string>;
 
+  avoSafeNonce(
+    owner_: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   callStatic: {
     DOMAIN_SEPARATOR_NAME(overrides?: CallOverrides): Promise<string>;
 
     DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<string>;
+
+    avoSafeNonce(
+      owner_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   filters: {};
@@ -99,6 +126,11 @@ export interface GaslessWallet extends BaseContract {
     DOMAIN_SEPARATOR_NAME(overrides?: CallOverrides): Promise<BigNumber>;
 
     DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<BigNumber>;
+
+    avoSafeNonce(
+      owner_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -107,6 +139,11 @@ export interface GaslessWallet extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     DOMAIN_SEPARATOR_VERSION(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    avoSafeNonce(
+      owner_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
