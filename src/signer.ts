@@ -84,6 +84,14 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
 
+    console.log({
+      avoSafeNonce,
+    })
+
+    console.log({
+      forwarder,
+    })
+
     return {
       actions: transactions.map(transaction => (
         {
