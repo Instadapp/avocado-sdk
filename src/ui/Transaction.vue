@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { ref } from '@vue/runtime-dom';
 defineProps<{ data: any }>()
 const emit = defineEmits(['confirm', 'cancel'])
 
-const gasLimit = ref(8_000_000)
-
 const confirm = () => {
     emit('confirm', {
-        gasLimit: gasLimit.value
+         // u can override gasLimit, source, validUntil, metadata 
     })
 }
 

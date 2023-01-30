@@ -70,12 +70,15 @@ export class AvocadoSafeProvider extends EventEmitter {
         throw Error("Transaction cancelled")
       }
 
-      const { gasLimit } = response
+      const { gasLimit, source, validUntil, metadata } = response
 
       const hash = await this.#safe.sendTransaction({
         ...request.params[0],
         chainId: this.#chainId,
-        gasLimit: gasLimit || '8000000'
+        gasLimit: gasLimit || '8000000',
+        source: source || '0x0000000000000000000000000000000000000001',
+        metadata: metadata || '0x',
+        validUntil: validUntil || '0',
       })
 
       return hash.hash
