@@ -82,6 +82,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const forwarder = getForwarderContract(targetChainId)
 
+    await new Promise(resolve => setTimeout(resolve, 300))
+
     const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
 
     console.log({
