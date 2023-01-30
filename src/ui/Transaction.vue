@@ -1,5 +1,8 @@
 <script setup lang="ts">
-defineProps<{ data: any }>()
+import { AvocadoSafeProvider } from '../AvocadoSafeProvider';
+
+defineProps<{ data: any, provider: AvocadoSafeProvider  }>()
+
 const emit = defineEmits(['confirm', 'cancel'])
 
 const confirm = () => {

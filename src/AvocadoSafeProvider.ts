@@ -150,7 +150,7 @@ export class AvocadoSafeProvider extends EventEmitter {
   }
 
   #registerUiBridge() {
-    register()
+    register(this)
   }
 
   async enable() {
