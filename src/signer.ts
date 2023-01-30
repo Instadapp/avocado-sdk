@@ -67,7 +67,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async generateSignatureMessage(transactions: Deferrable<TransactionRequest>[], targetChainId: number, options?: SignatureOption) {
-    await this.syncAccount()
+    // await this.syncAccount()
 
     // if (await this._chainId !== 634) {
     //   throw new Error('Signer provider chain id should be 634')
@@ -81,8 +81,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
     })
 
     const forwarder = getForwarderContract(targetChainId)
-
-    await new Promise(resolve => setTimeout(resolve, 300))
 
     const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
 
