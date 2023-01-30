@@ -1,56 +1,9 @@
 <script setup lang="ts">
-import { AvocadoSafeProvider } from "../../src";
+import { AvocadoSafeProvider } from '../AvocadoSafeProvider';
 
-import { onMounted } from "vue";
-import ChainLogo from "./ChainLogo.vue";
+defineProps<{ data: any, provider: AvocadoSafeProvider  }>()
 
-const props = defineProps<{ data: any }>();
-const emit = defineEmits(["confirm", "cancel"]);
-
-onMounted(async () => {
-  const provider = new AvocadoSafeProvider({ chainId: 634 });
-
-  const selam = await provider.request({
-    method: "eth_getBalance",
-  });
-
-  console.log(selam);
-
-  // provider.request({
-  //     method: "eth_sendTransaction",
-  //     params: [
-  //         {
-  //             from: safeAddress,
-  //             to: safeAddress,
-  //         }
-  //     ]
-  // })
-});
-
-const chainIdToName = (chainId: string | number) => {
-  switch (String(chainId)) {
-    case "1":
-      return "Mainnet";
-    case "137":
-      return "Polygon";
-    case "10":
-      return "Optimism";
-    case "42161":
-      return "Arbitrum";
-    case "43114":
-      return "Avalanche";
-    case "100":
-      return "Gnosis";
-    case "56":
-      return "BSC";
-    case "250":
-      return "Fantom";
-    case "634":
-      return "Avocado";
-    default:
-      throw new Error(`Unknown chainId ${chainId}`);
-  }
-};
+const emit = defineEmits(['confirm', 'cancel'])
 
 const confirm = () => {
   emit("confirm", {

@@ -13,6 +13,20 @@ declare global {
   }
 }
 
+const CHAIN_USDC_ADDRESSES: any = {
+  "137": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+  "10": "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
+  "42161": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+  "1": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "43114": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
+  "100": "0xddafbb505ad214d7b80b1f830fccc89b60fb7a83",
+  "56": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+}
+
+const usdcToNativeAmount = async (amountInWei: BigNumber, chainId: number) => {
+  return amountInWei.toString()
+}
+
 export class AvocadoSafeProvider extends EventEmitter {
   isMetaMask: boolean = true
 
@@ -38,9 +52,11 @@ export class AvocadoSafeProvider extends EventEmitter {
 
   async request(request: { method: string, params?: Array<any> }) {
     if (request.method === 'eth_getBalance') {
-      const usdcBalance = await this.#avoNetworkProvider.getBalance(await this.#safe.getOwnerddress())
+      //@ts-ignore
+      const usdcBalance = await this.#avoNetworkProvider.getBalance(...request.params)
+      const amount = await usdcToNativeAmount(usdcBalance, this.#chainId);
 
-      return usdcBalance.toHexString() // convert it to eth/matic/avax
+      return BigNumber.from(amount).toHexString()
     } else if (request.method === 'eth_requestAccounts') {
       await this.#ethereum.request(request)
 
@@ -58,15 +74,15 @@ export class AvocadoSafeProvider extends EventEmitter {
       await this.#switchToAvoNetwork()
 
       const response = await bridge.request('sendTransaction', {
-          raw: request.params[0],
-          chainId: this.#chainId,
-          signer: await this.#safe.getOwnerddress(),
-          message: await this.safe.generateSignatureMessage([
-            request.params[0],
-          ], this.#chainId)
+        raw: request.params[0],
+        chainId: this.#chainId,
+        signer: await this.#safe.getOwnerddress(),
+        message: await this.safe.generateSignatureMessage([
+          request.params[0],
+        ], this.#chainId)
       })
 
-      if(! response) {
+      if (!response) {
         throw Error("Transaction cancelled")
       }
 
@@ -134,13 +150,13 @@ export class AvocadoSafeProvider extends EventEmitter {
   }
 
   #registerUiBridge() {
-    register()
+    register(this)
   }
 
   async enable() {
     this.#registerUiBridge();
 
-    const accounts =  await this.request({ method: 'eth_requestAccounts' })
+    const accounts = await this.request({ method: 'eth_requestAccounts' })
 
     bridge.setAvocadoSafeProvider(this)
 

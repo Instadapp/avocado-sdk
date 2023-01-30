@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from '@vue/runtime-dom';
+import { AvocadoSafeProvider } from '../AvocadoSafeProvider';
 import { bridge } from '../bridge';
 import Transaction from './Transaction.vue';
+const props = defineProps<{ provider: AvocadoSafeProvider }>()
 // import Widget from './Widget.vue';
 
 const transactionData = ref(null)
@@ -37,7 +39,7 @@ onUnmounted(() => {
 <template>
     <div class="font-sans">
         <Transaction v-if="transactionData" :data="transactionData" @confirm="confirmTransaction"
-            @cancel="cancelTransaction" />
+            @cancel="cancelTransaction" :provider="provider"/>
 
         <!-- <Widget /> -->
     </div>
