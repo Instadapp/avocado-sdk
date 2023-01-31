@@ -236,7 +236,7 @@ const cancel = () => {
                 <a
                   target="_blank"
                   href="https://avocado.link/gas"
-                  class="h-[26px] inline-flex items-center px-3 bg-blue-500 rounded-md text-white"
+                  class="h-[26px] hover:bg-blue-600 inline-flex items-center px-3 bg-blue-500 rounded-md text-white"
                 >
                   Top-up
                 </a>
