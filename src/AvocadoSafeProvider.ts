@@ -50,6 +50,10 @@ export class AvocadoSafeProvider extends EventEmitter {
     return this.#chainId;
   }
 
+  get avoNetworkProvider() {
+    return this.#avoNetworkProvider
+  }
+
   async request(request: { method: string, params?: Array<any> }) {
     if (request.method === 'eth_getBalance') {
       //@ts-ignore

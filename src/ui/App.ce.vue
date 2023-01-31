@@ -52,4 +52,22 @@ onUnmounted(() => {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.loading-box {
+  background: linear-gradient(-45deg, #475569, #334155, #334155);
+  background-size: 400% 400%;
+  animation: gradient 1.6s linear infinite;
+}
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 </style>
