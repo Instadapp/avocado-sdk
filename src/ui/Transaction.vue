@@ -1,206 +1,268 @@
 <script setup lang="ts">
-import { AvocadoSafeProvider } from '../AvocadoSafeProvider';
+import { ethers } from 'ethers'
+import { BigNumber } from "@ethersproject/bignumber";
+import type { AvocadoSafeProvider } from "../AvocadoSafeProvider";
+import NetworkSVG from "./icons/Network.vue";
+import GasSVG from "./icons/Gas.vue";
+import UsdcSVG from "./icons/USDC.vue";
+import ExclamationSVG from "./icons/Exclamation.vue";
+import AvocadoSVG from "./icons/Avocado.vue";
+import { onMounted, ref, toRaw, computed } from "vue";
+import ChainLogo from "./ChainLogo.vue";
 
-defineProps<{ data: any, provider: AvocadoSafeProvider  }>()
+type CalculateFeeProps = {
+  fee: string;
+  multiplier: string;
+  chainId: string;
+};
 
-const emit = defineEmits(['confirm', 'cancel'])
+type FeeProps = {
+  min: number;
+  max: number;
+  formatted: string;
+};
+
+const props = defineProps<{ data: any; provider: AvocadoSafeProvider }>();
+const fee = ref<FeeProps>({ min: 0, max: 0, formatted: "" });
+const usdcBalance = ref("0");
+const loading = ref(false);
+
+const emit = defineEmits(["confirm", "cancel"]);
+
+function formatUsd(value: any, fractionDigits = 2) {
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+
+  return formatter.format(value);
+}
+
+const calculateEstimatedFee = (params: CalculateFeeProps): FeeProps => {
+  const minFee = {
+    "137": 0.01,
+    "10": 0.005,
+    "42161": 0.005,
+    "43114": 0.005,
+    "1": 0.005,
+    "100": 0.01,
+    "56": 0.01,
+  };
+
+  const { fee, multiplier = "0" } = params;
+  if (!fee)
+    return {
+      min: 0,
+      max: 0,
+      formatted: "",
+    };
+
+  const maxVal = BigNumber.from(fee).div("1000000000000000000").toNumber();
+
+  const minVal = BigNumber.from(fee)
+    .div(multiplier)
+    .div("100000000000000")
+    .toNumber();
+
+  const minChainFee = minFee[String(params.chainId) as keyof typeof minFee];
+
+  const actualMin = Math.max(minVal, minChainFee);
+  const actualMax = Math.max(maxVal, minChainFee);
+  const isEqual = actualMin === actualMax;
+
+  return {
+    min: actualMin,
+    max: actualMax,
+    formatted: isEqual ? formatUsd(actualMax) : `${formatUsd(actualMin)} - ${formatUsd(actualMax)}`,
+  };
+};
+
+const isBalaceNotEnough = computed(() => {
+  if (loading.value) return false;
+  const { max } = fee.value;
+  const balance = Number(usdcBalance.value);
+
+  return balance < max;
+});
+
+onMounted(async () => {
+  try {
+    loading.value = true;
+
+    const balanceHex = await props.provider.request({
+      method: "eth_getBalance",
+      params: [props.data.signer],
+    });
+
+    usdcBalance.value = ethers.utils.formatEther(balanceHex);
+
+    const estimatedFee = await props.provider.avoNetworkProvider.send(
+      "txn_estimateFeeWithoutSignature",
+      [props.data.message, props.data.signer, String(props.data.chainId)]
+    );
+
+    fee.value = calculateEstimatedFee({
+      fee: estimatedFee.fee,
+      multiplier: estimatedFee.multiplier,
+      chainId: props.data.chainId,
+    });
+  } catch(e) {
+    console.log(e)
+  } finally {
+    loading.value = false;
+  }
+});
+
+const chainIdToName = (chainId: string | number) => {
+  switch (String(chainId)) {
+    case "1":
+      return "Mainnet";
+    case "137":
+      return "Polygon";
+    case "10":
+      return "Optimism";
+    case "42161":
+      return "Arbitrum";
+    case "43114":
+      return "Avalanche";
+    case "100":
+      return "Gnosis";
+    case "56":
+      return "BSC";
+    case "250":
+      return "Fantom";
+    case "634":
+      return "Avocado";
+    default:
+      throw new Error(`Unknown chainId ${chainId}`);
+  }
+};
 
 const confirm = () => {
-    emit('confirm', {
-         // u can override gasLimit, source, validUntil, metadata 
-    })
-}
+  emit("confirm", {
+    // u can override gasLimit, source, validUntil, metadata
+  });
+};
 
 const cancel = () => {
-    emit('cancel')
-}
+  emit("cancel");
+};
 </script>
 <template>
-    <div class="relative z-[9999999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="cancel"></div>
-        <div class="fixed inset-0 z-[9999999] overflow-y-auto">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-25 transition-opacity" @click="cancel"></div>
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div
-                    class="relative transform overflow-hidden rounded-[10px] p-7.5 bg-gray-950 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-10">
-                    <div class="flex justify-between items-center">
-                        <div class="text-lg text-white font-semibold leading-[30px]">Send Transaction</div>
-
-                        <div class="py-2 px-2.5 bg-gray-850 border border-slate-750 rounded-[10px]">
-                            <svg width="70" height="16" viewBox="0 0 70 16" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g clip-path="url(#clip0_4755_96793)">
-                                    <path
-                                        d="M12.5739 10.1889C12.6547 9.23344 12.407 8.30828 13.0845 7.63084L13.5041 7.21123C14.6972 6.01812 14.6972 4.0768 13.5041 2.88369L12.5637 1.94336L11.8863 2.6208C11.133 2.64102 10.3848 2.9393 9.80848 3.51563L9.70231 3.61674C9.02487 4.29419 8.13004 4.70874 7.17959 4.78963C5.91571 4.8958 4.73271 5.44684 3.83284 6.34673C2.33135 7.84822 1.92185 10.0272 2.6094 11.8977L2.26562 12.2415L3.55479 13.5307C5.61743 15.5933 8.95914 15.5933 11.0218 13.5307C11.9166 12.6358 12.4677 11.4528 12.5739 10.1889Z"
-                                        fill="url(#paint0_linear_4755_96793)" />
-                                    <path
-                                        d="M10.0879 1.66504C10.7907 1.66504 11.4934 1.93298 12.0293 2.46887C13.101 3.54065 13.101 5.27975 12.0293 6.35153L11.9332 6.44758C11.3265 7.05425 10.9524 7.85808 10.8817 8.71247C10.7856 9.84491 10.2902 10.9116 9.48633 11.7155C8.56117 12.6406 7.34784 13.1057 6.13451 13.1057C4.92118 13.1057 3.70785 12.6406 2.78268 11.7155C0.932352 9.86513 0.932352 6.86719 2.78268 5.01687C3.58651 4.21303 4.64818 3.71759 5.78567 3.62154C6.64006 3.55076 7.44389 3.17665 8.05056 2.56998L8.14661 2.47393C8.6825 1.93298 9.38522 1.66504 10.0879 1.66504ZM10.0879 0.921875C9.15772 0.921875 8.27806 1.28587 7.62084 1.94309L7.52984 2.03915C7.04956 2.51943 6.40751 2.8177 5.72501 2.87837C4.41562 2.98959 3.18712 3.56087 2.26196 4.48603C1.22557 5.52242 0.654297 6.90258 0.654297 8.36364C0.654297 9.82974 1.22557 11.2049 2.26196 12.2412C3.29835 13.2776 4.67345 13.8489 6.13956 13.8489C7.60567 13.8489 8.98078 13.2776 10.0172 12.2412C10.9423 11.3161 11.5187 10.0825 11.6299 8.77819C11.6855 8.09569 11.9838 7.45869 12.4691 6.97336L12.5652 6.87731C13.2224 6.22008 13.5864 5.34042 13.5864 4.4102C13.5864 3.47998 13.2224 2.60032 12.5652 1.94309C11.8978 1.28587 11.0232 0.921875 10.0879 0.921875Z"
-                                        fill="#337D63" />
-                                    <path
-                                        d="M11.9387 6.4476L12.0347 6.35154C13.1065 5.27977 13.1065 3.54065 12.0347 2.46887C10.963 1.3971 9.22386 1.3971 8.15208 2.46887L8.05602 2.56493C7.44936 3.17159 6.64553 3.5457 5.79114 3.61648C4.65363 3.71253 3.59197 4.20798 2.78814 5.01182C0.937808 6.86215 0.937808 9.86009 2.78814 11.7104C4.63847 13.5608 7.63641 13.5608 9.48674 11.7104C10.2906 10.9066 10.786 9.84492 10.8821 8.70743C10.9579 7.8581 11.332 7.05427 11.9387 6.4476Z"
-                                        fill="#89BA4F" />
-                                    <path
-                                        d="M11.9387 6.4476L12.0347 6.35154C13.1065 5.27977 13.1065 3.54065 12.0347 2.46887C10.963 1.3971 9.22386 1.3971 8.15208 2.46887L8.05602 2.56493C7.44936 3.17159 6.64553 3.5457 5.79114 3.61648C4.65363 3.71253 3.59197 4.20798 2.78814 5.01182C0.937808 6.86215 0.937808 9.86009 2.78814 11.7104C4.63847 13.5608 7.63641 13.5608 9.48674 11.7104C10.2906 10.9066 10.786 9.84492 10.8821 8.70743C10.9579 7.8581 11.332 7.05427 11.9387 6.4476Z"
-                                        fill="url(#paint1_radial_4755_96793)" />
-                                    <g filter="url(#filter0_f_4755_96793)">
-                                        <path
-                                            d="M5.8097 10.9045C7.02703 10.9045 8.01392 9.91769 8.01392 8.70031C8.01392 7.48299 7.02703 6.49609 5.8097 6.49609C4.59233 6.49609 3.60547 7.48299 3.60547 8.70031C3.60547 9.91769 4.59233 10.9045 5.8097 10.9045Z"
-                                            fill="#6A8729" />
-                                    </g>
-                                    <path
-                                        d="M6.36045 10.3713C7.57783 10.3713 8.56467 9.38443 8.56467 8.16711C8.56467 6.94973 7.57783 5.96289 6.36045 5.96289C5.14313 5.96289 4.15625 6.94973 4.15625 8.16711C4.15625 9.38443 5.14313 10.3713 6.36045 10.3713Z"
-                                        fill="url(#paint2_radial_4755_96793)" />
-                                </g>
-                                <path
-                                    d="M20.1056 12L22.4875 4.34988H24.5525L26.9344 12H25.104L24.1184 8.12801C24.0245 7.74472 23.9228 7.33797 23.8133 6.90775C23.7038 6.47752 23.6021 6.06295 23.5083 5.66401H23.4613C23.3675 6.06295 23.2697 6.47752 23.168 6.90775C23.0663 7.33797 22.9646 7.74472 22.8629 8.12801L21.8656 12H20.1056ZM21.6779 10.1813V8.83201H25.3387V10.1813H21.6779ZM29.5933 12L27.3991 6.18028H29.1357L30.0509 8.92587C30.1447 9.2153 30.2347 9.50863 30.3207 9.80587C30.4068 10.1031 30.4928 10.4082 30.5789 10.7211H30.6258C30.7118 10.4082 30.794 10.1031 30.8722 9.80587C30.9582 9.50863 31.0482 9.2153 31.1421 8.92587L32.0573 6.18028H33.7117L31.5762 12H29.5933ZM37.5908 12.1408C37.0823 12.1408 36.6013 12.0235 36.1476 11.7888C35.6939 11.5463 35.3263 11.1982 35.0447 10.7445C34.7631 10.283 34.6223 9.73156 34.6223 9.09014C34.6223 8.44872 34.7631 7.90116 35.0447 7.44748C35.3263 6.98597 35.6939 6.63788 36.1476 6.40321C36.6013 6.16072 37.0823 6.03948 37.5908 6.03948C38.0992 6.03948 38.5803 6.16072 39.034 6.40321C39.4877 6.63788 39.8553 6.98597 40.1369 7.44748C40.4185 7.90116 40.5593 8.44872 40.5593 9.09014C40.5593 9.73156 40.4185 10.283 40.1369 10.7445C39.8553 11.1982 39.4877 11.5463 39.034 11.7888C38.5803 12.0235 38.0992 12.1408 37.5908 12.1408ZM37.5908 10.7445C37.8567 10.7445 38.0758 10.678 38.2479 10.5451C38.4278 10.4121 38.5607 10.2204 38.6468 9.97014C38.7407 9.71983 38.7876 9.42649 38.7876 9.09014C38.7876 8.75379 38.7407 8.46045 38.6468 8.21014C38.5607 7.95983 38.4278 7.76819 38.2479 7.63521C38.0758 7.50223 37.8567 7.43574 37.5908 7.43574C37.3248 7.43574 37.1019 7.50223 36.922 7.63521C36.7499 7.76819 36.6169 7.95983 36.5231 8.21014C36.437 8.46045 36.394 8.75379 36.394 9.09014C36.394 9.42649 36.437 9.71983 36.5231 9.97014C36.6169 10.2204 36.7499 10.4121 36.922 10.5451C37.1019 10.678 37.3248 10.7445 37.5908 10.7445ZM45.1307 12.1408C44.5206 12.1408 43.9691 12.0235 43.4763 11.7888C42.9914 11.5463 42.6042 11.1982 42.3147 10.7445C42.0331 10.283 41.8923 9.73156 41.8923 9.09014C41.8923 8.44872 42.0488 7.90116 42.3617 7.44748C42.6746 6.98597 43.0852 6.63788 43.5937 6.40321C44.1099 6.16072 44.6653 6.03948 45.2598 6.03948C45.7213 6.03948 46.1398 6.11379 46.5153 6.26241C46.8907 6.40321 47.1997 6.59095 47.4422 6.82561L46.6443 7.89334C46.4175 7.7369 46.1985 7.62348 45.9873 7.55308C45.7839 7.47485 45.5727 7.43574 45.3537 7.43574C45.0251 7.43574 44.7318 7.50223 44.4737 7.63521C44.2155 7.76819 44.0161 7.95983 43.8753 8.21014C43.7345 8.46045 43.6641 8.75379 43.6641 9.09014C43.6641 9.42649 43.7306 9.71983 43.8635 9.97014C44.0043 10.2204 44.196 10.4121 44.4385 10.5451C44.6888 10.678 44.9743 10.7445 45.295 10.7445C45.6001 10.7445 45.8777 10.6898 46.1281 10.5803C46.3862 10.4708 46.6209 10.3417 46.8321 10.1931L47.5243 11.2843C47.1801 11.5737 46.7929 11.7888 46.3627 11.9296C45.9403 12.0704 45.5297 12.1408 45.1307 12.1408ZM50.7699 12.1408C50.3788 12.1408 50.0385 12.0626 49.7491 11.9061C49.4675 11.7497 49.2484 11.5385 49.092 11.2725C48.9356 11.0066 48.8573 10.7093 48.8573 10.3808C48.8573 9.73156 49.1507 9.23485 49.7373 8.89067C50.3318 8.5465 51.3174 8.3353 52.6941 8.25708C52.6707 8.07716 52.612 7.92463 52.5181 7.79948C52.4243 7.67432 52.2874 7.58045 52.1075 7.51788C51.9354 7.44748 51.7163 7.41228 51.4504 7.41228C51.2627 7.41228 51.0749 7.43574 50.8872 7.48268C50.6995 7.52179 50.5039 7.58437 50.3005 7.67041C50.105 7.74863 49.8977 7.8425 49.6787 7.95201L49.0685 6.82561C49.3345 6.66917 49.6122 6.53228 49.9016 6.41495C50.1988 6.29761 50.5039 6.20766 50.8168 6.14508C51.1375 6.07468 51.4621 6.03948 51.7907 6.03948C52.3382 6.03948 52.8075 6.13726 53.1987 6.33281C53.5898 6.52055 53.8909 6.80997 54.1021 7.20108C54.3133 7.58437 54.4189 8.07325 54.4189 8.66774V12H53.0109L52.8819 11.3429H52.8349C52.5455 11.562 52.2248 11.7497 51.8728 11.9061C51.5208 12.0626 51.1532 12.1408 50.7699 12.1408ZM51.3213 10.8032C51.5795 10.8032 51.8219 10.7524 52.0488 10.6507C52.2756 10.5412 52.4907 10.4082 52.6941 10.2517V9.28961C52.1231 9.3209 51.6772 9.37956 51.3565 9.46561C51.0436 9.55165 50.8246 9.66116 50.6995 9.79414C50.5743 9.92712 50.5117 10.0796 50.5117 10.2517C50.5117 10.3691 50.543 10.4708 50.6056 10.5568C50.676 10.6428 50.7699 10.7054 50.8872 10.7445C51.0124 10.7836 51.1571 10.8032 51.3213 10.8032ZM58.1807 12.1408C57.4454 12.1408 56.851 11.8709 56.3973 11.3312C55.9514 10.7836 55.7285 10.0366 55.7285 9.09014C55.7285 8.45654 55.8458 7.9129 56.0805 7.45921C56.323 7.00552 56.6358 6.65743 57.0191 6.41495C57.4024 6.16464 57.8014 6.03948 58.2159 6.03948C58.5366 6.03948 58.8143 6.09424 59.049 6.20375C59.2837 6.31326 59.4949 6.46579 59.6826 6.66135H59.7295L59.6474 5.75788V3.77495H61.3722V12H59.9642L59.8351 11.4016H59.7999C59.5887 11.6128 59.3384 11.7888 59.049 11.9296C58.7674 12.0704 58.478 12.1408 58.1807 12.1408ZM58.6266 10.7328C58.8221 10.7328 59.0021 10.6937 59.1663 10.6155C59.3384 10.5294 59.4988 10.3886 59.6474 10.1931V7.83468C59.4909 7.69388 59.3306 7.5961 59.1663 7.54134C59.0099 7.47877 58.8456 7.44748 58.6735 7.44748C58.4623 7.44748 58.2668 7.50614 58.0869 7.62348C57.907 7.74081 57.7622 7.92072 57.6527 8.16321C57.551 8.39787 57.5002 8.69903 57.5002 9.06667C57.5002 9.63769 57.598 10.0601 57.7935 10.3339C57.9891 10.5998 58.2668 10.7328 58.6266 10.7328ZM65.7324 12.1408C65.224 12.1408 64.7429 12.0235 64.2892 11.7888C63.8355 11.5463 63.4679 11.1982 63.1863 10.7445C62.9047 10.283 62.7639 9.73156 62.7639 9.09014C62.7639 8.44872 62.9047 7.90116 63.1863 7.44748C63.4679 6.98597 63.8355 6.63788 64.2892 6.40321C64.7429 6.16072 65.224 6.03948 65.7324 6.03948C66.2408 6.03948 66.7219 6.16072 67.1756 6.40321C67.6293 6.63788 67.9969 6.98597 68.2785 7.44748C68.5601 7.90116 68.7009 8.44872 68.7009 9.09014C68.7009 9.73156 68.5601 10.283 68.2785 10.7445C67.9969 11.1982 67.6293 11.5463 67.1756 11.7888C66.7219 12.0235 66.2408 12.1408 65.7324 12.1408ZM65.7324 10.7445C65.9983 10.7445 66.2174 10.678 66.3895 10.5451C66.5694 10.4121 66.7023 10.2204 66.7884 9.97014C66.8823 9.71983 66.9292 9.42649 66.9292 9.09014C66.9292 8.75379 66.8823 8.46045 66.7884 8.21014C66.7023 7.95983 66.5694 7.76819 66.3895 7.63521C66.2174 7.50223 65.9983 7.43574 65.7324 7.43574C65.4664 7.43574 65.2435 7.50223 65.0636 7.63521C64.8915 7.76819 64.7585 7.95983 64.6647 8.21014C64.5786 8.46045 64.5356 8.75379 64.5356 9.09014C64.5356 9.42649 64.5786 9.71983 64.6647 9.97014C64.7585 10.2204 64.8915 10.4121 65.0636 10.5451C65.2435 10.678 65.4664 10.7445 65.7324 10.7445Z"
-                                    fill="white" />
-                                <defs>
-                                    <filter id="filter0_f_4755_96793" x="1.47214" y="4.36277" width="8.67486"
-                                        height="8.67486" filterUnits="userSpaceOnUse"
-                                        color-interpolation-filters="sRGB">
-                                        <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix"
-                                            result="shape" />
-                                        <feGaussianBlur stdDeviation="1.06666"
-                                            result="effect1_foregroundBlur_4755_96793" />
-                                    </filter>
-                                    <linearGradient id="paint0_linear_4755_96793" x1="14.3989" y1="4.5874" x2="5.20293"
-                                        y2="14.4457" gradientUnits="userSpaceOnUse">
-                                        <stop offset="0.0112" stop-color="#A9EC4A" />
-                                        <stop offset="0.130301" stop-color="#88C83E" />
-                                        <stop offset="0.256868" stop-color="#578546" />
-                                        <stop offset="0.379777" stop-color="#55A052" />
-                                        <stop offset="0.600539" stop-color="#275B57" />
-                                        <stop offset="0.751125" stop-color="#294F59" />
-                                        <stop offset="1" stop-color="#395468" />
-                                    </linearGradient>
-                                    <radialGradient id="paint1_radial_4755_96793" cx="0" cy="0" r="1"
-                                        gradientUnits="userSpaceOnUse"
-                                        gradientTransform="translate(3.37206 4.58716) rotate(56.8393) scale(10.1667 27.5715)">
-                                        <stop offset="0.351455" stop-color="#D9F650" />
-                                        <stop offset="0.814859" stop-color="#DEFB4F" stop-opacity="0" />
-                                    </radialGradient>
-                                    <radialGradient id="paint2_radial_4755_96793" cx="0" cy="0" r="1"
-                                        gradientUnits="userSpaceOnUse"
-                                        gradientTransform="translate(7.31979 7.36833) rotate(140.505) scale(3.72605)">
-                                        <stop offset="0.129081" stop-color="#D5A891" />
-                                        <stop offset="0.443693" stop-color="#A07751" />
-                                        <stop offset="0.791711" stop-color="#57463C" />
-                                        <stop offset="0.982639" stop-color="#5B5830" />
-                                    </radialGradient>
-                                    <clipPath id="clip0_4755_96793">
-                                        <rect width="14.9333" height="14.9333" fill="white"
-                                            transform="translate(0.267578 0.533203)" />
-                                    </clipPath>
-                                </defs>
-                            </svg>
-
-                        </div>
-                    </div>
-
-                    <div class="my-[30px] bg-gray-850 rounded-[10px] py-4 px-5 space-y-4">
-                        <div class="flex justify-between items-center">
-                            <div class="text-slate-400 flex items-center gap-2.5">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <g clip-path="url(#clip0_4755_96805)">
-                                        <path
-                                            d="M8.00065 14.6663C11.6825 14.6663 14.6673 11.6816 14.6673 7.99967C14.6673 4.31778 11.6825 1.33301 8.00065 1.33301C4.31875 1.33301 1.33398 4.31778 1.33398 7.99967C1.33398 11.6816 4.31875 14.6663 8.00065 14.6663Z"
-                                            stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                        <path d="M1.33398 8H14.6673" stroke="#94A3B8" stroke-width="1.5"
-                                            stroke-linecap="round" stroke-linejoin="round" />
-                                        <path
-                                            d="M8.00065 1.33301C9.66817 3.15858 10.6158 5.5277 10.6673 7.99967C10.6158 10.4717 9.66817 12.8408 8.00065 14.6663C6.33313 12.8408 5.38548 10.4717 5.33398 7.99967C5.38548 5.5277 6.33313 3.15858 8.00065 1.33301Z"
-                                            stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_4755_96805">
-                                            <rect width="16" height="16" fill="white" />
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-
-                                <span class="text-sm leading-5 font-medium">Network</span>
-                            </div>
-
-                            <div class="text-white flex items-center gap-2.5">
-                                {{ data.chainId }}
-                            </div>
-                        </div>
-
-                        <div class="flex justify-between items-center">
-                            <div class="text-slate-400 flex items-center gap-2.5">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <g clip-path="url(#clip0_4755_96815)">
-                                        <rect x="1.55078" y="1.5498" width="8.1" height="12.9" rx="2.25"
-                                            stroke="#94A3B8" stroke-width="1.5" />
-                                        <rect x="4.33333" y="7.53353" width="2.53333" height="0.666667" rx="0.333333"
-                                            fill="#94A3B8" stroke="#94A3B8" stroke-width="0.666667" />
-                                        <rect x="4.33333" y="10.7337" width="2.53333" height="0.666667" rx="0.333333"
-                                            fill="#94A3B8" stroke="#94A3B8" stroke-width="0.666667" />
-                                        <path
-                                            d="M10.4004 8H11.4004C11.9527 8 12.4004 8.44771 12.4004 9V12.6C12.4004 13.1523 12.8481 13.6 13.4004 13.6H13.8004C14.3527 13.6 14.8004 13.1523 14.8004 12.6V2"
-                                            stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_4755_96815">
-                                            <rect width="16" height="16" fill="white" />
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-
-                                <span class="text-sm leading-5 font-medium">Estimated gas fees</span>
-                            </div>
-
-                            <div class="text-white flex items-center gap-2.5">
-                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <rect width="18" height="18" rx="9" fill="url(#paint0_linear_4755_96821)" />
-                                    <g clip-path="url(#clip0_4755_96821)">
-                                        <path
-                                            d="M4.74594 7.41986C3.86469 9.75966 5.08016 12.4033 7.4503 13.254C7.54146 13.3149 7.63262 13.4364 7.63262 13.5275V13.953C7.63262 14.0137 7.63262 14.0441 7.6022 14.0745C7.57187 14.196 7.4503 14.2568 7.32873 14.196C5.62712 13.6491 4.32048 12.3424 3.77353 10.6408C2.86194 7.75416 4.44205 4.68509 7.32873 3.7735C7.35914 3.74316 7.41989 3.74316 7.4503 3.74316C7.57187 3.7735 7.63262 3.86466 7.63262 3.98623V4.41161C7.63262 4.56359 7.57187 4.65475 7.4503 4.7155C6.20448 5.1713 5.20173 6.14364 4.74594 7.41986Z"
-                                            fill="white" />
-                                        <path
-                                            d="M10.3978 3.89507C10.4281 3.7735 10.5497 3.71275 10.6713 3.7735C12.3425 4.32046 13.6795 5.62709 14.2265 7.35911C15.1381 10.2458 13.5579 13.3149 10.6713 14.2264C10.6409 14.2568 10.5801 14.2568 10.5497 14.2568C10.4281 14.2264 10.3674 14.1353 10.3674 14.0137V13.5883C10.3674 13.4364 10.4281 13.3452 10.5497 13.2844C11.7955 12.8287 12.7983 11.8563 13.2541 10.5801C14.1353 8.24029 12.9198 5.59668 10.5497 4.74591C10.4585 4.68509 10.3674 4.56359 10.3674 4.44203V4.01664C10.3674 3.95582 10.3674 3.92548 10.3978 3.89507Z"
-                                            fill="white" />
-                                        <path
-                                            d="M9.09041 8.48323C10.3666 8.63514 11.0047 8.99977 11.0047 10.0633C11.0047 10.8837 10.397 11.5218 9.48545 11.6738V12.4031C9.45504 12.555 9.36388 12.6461 9.24231 12.6461H8.78652C8.63462 12.6157 8.54346 12.5246 8.54346 12.4031V11.6738C7.54072 11.5218 7.05452 10.9749 6.93303 10.2153V10.1848C6.93303 10.0633 7.02419 9.97212 7.14568 9.97212H7.66229C7.75345 9.97212 7.84461 10.0329 7.87494 10.1544C7.9661 10.6102 8.23958 10.9445 9.02966 10.9445C9.60694 10.9445 10.0324 10.6103 10.0324 10.1241C10.0324 9.63789 9.75892 9.45557 8.90809 9.30366C7.63188 9.15168 7.02419 8.75671 7.02419 7.75395C7.02419 6.99427 7.60147 6.38656 8.51305 6.26499V5.56613C8.54346 5.41415 8.63462 5.32299 8.75618 5.32299H9.21197C9.36388 5.3534 9.45504 5.44456 9.45504 5.56613V6.2954C10.1539 6.35615 10.7008 6.8727 10.8224 7.54122V7.57164C10.8224 7.69313 10.7312 7.78429 10.6097 7.78429H10.1236C10.0324 7.78429 9.94124 7.72354 9.91083 7.63238C9.75892 7.17659 9.45504 6.99427 8.90809 6.99427C8.3004 6.99427 7.99651 7.26767 7.99651 7.69313C7.99651 8.11859 8.17883 8.36166 9.09041 8.48323Z"
-                                            fill="white" />
-                                    </g>
-                                    <defs>
-                                        <linearGradient id="paint0_linear_4755_96821" x1="9" y1="0" x2="9" y2="18"
-                                            gradientUnits="userSpaceOnUse">
-                                            <stop stop-color="#6FA4F5" />
-                                            <stop offset="1" stop-color="#3E73C4" />
-                                        </linearGradient>
-                                        <clipPath id="clip0_4755_96821">
-                                            <rect width="11.7" height="11.7" fill="white"
-                                                transform="translate(3.15039 3.15039)" />
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-
-                                <span>2.86 USDC</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center gap-4">
-                        <button type="button" @click="cancel"
-                            class="w-full text-center h-[44px] text-sm font-semibold leading-5 bg-slate-800 text-white py-3 px-4 rounded-[10px]">
-                            Reject
-                        </button>
-
-                        <button type="button" @click="confirm"
-                            class="w-full text-center h-[44px] text-sm font-semibold leading-5 bg-blue-500 text-white py-3 px-4 rounded-[10px]">
-                            Submit
-                        </button>
-                    </div>
-                </div>
+  <div
+    class="relative z-[9999999] dark:text-white text-slate-900"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      @click="cancel"
+    ></div>
+    <div class="fixed inset-0 z-[9999999] overflow-y-auto">
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-25 transition-opacity"
+        @click="cancel"
+      ></div>
+      <div
+        class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
+      >
+        <div
+          class="relative transform overflow-hidden rounded-[10px] p-7.5 bg-white dark:bg-gray-950 text-left shadow-xl transition-all sm:w-full sm:max-w-[460px] sm:pt-[35px] sm:pb-10 sm:px-10"
+        >
+          <div class="flex flex-col gap-7.5">
+            <div class="flex justify-between items-center">
+              <div class="text-lg font-semibold leading-[30px]">
+                Send Transaction
+              </div>
+              <div
+                class="py-2 px-2.5 dark:bg-gray-850 border dark:border-slate-750 bg-slate-50 border-slate-200 rounded-[10px]"
+              >
+                <AvocadoSVG />
+              </div>
             </div>
+
+            <div class="flex flex-col gap-2.5">
+              <div
+                class="dark:bg-gray-850 bg-slate-50 flex flex-col gap-4 rounded-[10px] py-[14px] px-5"
+              >
+                <div class="flex justify-between items-center">
+                  <div class="text-slate-400 flex items-center gap-2.5">
+                    <NetworkSVG />
+                    <span class="text-xs leading-5 font-medium">Network</span>
+                  </div>
+
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-xs font-medium">
+                      {{ chainIdToName(data.chainId) }}
+                    </span>
+                    <ChainLogo
+                      class="w-[18px] h-[18px]"
+                      :chain="data.chainId"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <div class="text-slate-400 flex items-center gap-2.5">
+                    <GasSVG />
+                    <span class="text-xs leading-5 font-medium"
+                      >Estimated gas fees</span
+                    >
+                  </div>
+
+                  <div class="flex items-center gap-2.5">
+                    <span
+                      v-if="loading"
+                      class="w-20 h-5 loading-box rounded-lg"
+                    ></span>
+                    <span v-else class="text-xs">{{ fee.formatted }}</span>
+                    <UsdcSVG />
+                  </div>
+                </div>
+              </div>
+              <div
+                v-if="isBalaceNotEnough"
+                class="flex items-center justify-between font-semibold text-xs rounded-[10px] bg-red-alert bg-opacity-10 py-2.5 px-3"
+              >
+                <p class="flex items-center gap-2.5 text-red-alert">
+                  <ExclamationSVG />
+
+                  Not enough USDC gas
+                </p>
+
+                <a
+                  target="_blank"
+                  href="https://avocado.link/gas"
+                  class="h-[26px] hover:bg-blue-600 inline-flex items-center px-3 bg-blue-500 rounded-md text-white"
+                >
+                  Top-up
+                </a>
+              </div>
+            </div>
+            <div class="flex justify-between items-center gap-4">
+              <button
+                type="button"
+                @click="cancel"
+                class="w-full hover:text-red-alert hover:bg-red-alert hover:bg-opacity-10 text-center h-[44px] text-sm font-semibold leading-5 bg-slate-800 text-white py-3 px-4 rounded-[10px]"
+              >
+                Reject
+              </button>
+
+              <button
+                :disabled="loading || isBalaceNotEnough"
+                type="button"
+                @click="confirm"
+                class="w-full dark:disabled:bg-slate-800 dark:disabled:text-slate-500 disabled:text-slate-400 disabled:bg-slate-200 text-center h-[44px] text-sm font-semibold leading-5 hover:bg-blue-600 bg-blue-500 text-white py-3 px-4 rounded-[10px]"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </template>
