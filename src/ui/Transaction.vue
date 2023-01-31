@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ethers } from 'ethers'
 import { BigNumber } from "@ethersproject/bignumber";
 import type { AvocadoSafeProvider } from "../AvocadoSafeProvider";
 import NetworkSVG from "./icons/Network.vue";
@@ -23,10 +24,10 @@ type FeeProps = {
 
 const props = defineProps<{ data: any; provider: AvocadoSafeProvider }>();
 const fee = ref<FeeProps>({ min: 0, max: 0, formatted: "" });
-const usdcBalance = ref(0);
+const usdcBalance = ref("0");
 const loading = ref(false);
 
-const emit = defineEmits(["confirm", "cancel", "topup"]);
+const emit = defineEmits(["confirm", "cancel"]);
 
 function formatUsd(value: any, fractionDigits = 2) {
   const formatter = new Intl.NumberFormat("en-US", {
@@ -69,11 +70,12 @@ const calculateEstimatedFee = (params: CalculateFeeProps): FeeProps => {
 
   const actualMin = Math.max(minVal, minChainFee);
   const actualMax = Math.max(maxVal, minChainFee);
+  const isEqual = actualMin === actualMax;
 
   return {
     min: actualMin,
     max: actualMax,
-    formatted: `${formatUsd(actualMin)} - ${formatUsd(actualMax)}`,
+    formatted: isEqual ? formatUsd(actualMax) : `${formatUsd(actualMin)} - ${formatUsd(actualMax)}`,
   };
 };
 
@@ -94,13 +96,7 @@ onMounted(async () => {
       params: [props.data.signer],
     });
 
-    usdcBalance.value = BigNumber.from(balanceHex)
-      .div(BigNumber.from(10).pow(18))
-      .toNumber();
-
-    console.log(
-      BigNumber.from(balanceHex).div(BigNumber.from(10).pow(18)).toNumber()
-    );
+    usdcBalance.value = ethers.utils.formatEther(balanceHex);
 
     const estimatedFee = await props.provider.avoNetworkProvider.send(
       "txn_estimateFeeWithoutSignature",
@@ -148,10 +144,6 @@ const confirm = () => {
   emit("confirm", {
     // u can override gasLimit, source, validUntil, metadata
   });
-};
-
-const topup = () => {
-  emit("topup");
 };
 
 const cancel = () => {
@@ -241,19 +233,20 @@ const cancel = () => {
                   Not enough USDC gas
                 </p>
 
-                <button
-                  @click="topup"
-                  class="h-[26px] px-3 bg-blue-500 rounded-md text-white"
+                <a
+                  target="_blank"
+                  href="https://avocado.link/gas"
+                  class="h-[26px] inline-flex items-center px-3 bg-blue-500 rounded-md text-white"
                 >
                   Top-up
-                </button>
+                </a>
               </div>
             </div>
             <div class="flex justify-between items-center gap-4">
               <button
                 type="button"
                 @click="cancel"
-                class="w-full text-center h-[44px] text-sm font-semibold leading-5 bg-slate-800 text-white py-3 px-4 rounded-[10px]"
+                class="w-full hover:text-red-alert hover:bg-red-alert hover:bg-opacity-10 text-center h-[44px] text-sm font-semibold leading-5 bg-slate-800 text-white py-3 px-4 rounded-[10px]"
               >
                 Reject
               </button>
