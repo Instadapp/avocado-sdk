@@ -95,7 +95,7 @@ export class AvocadoSafeProvider extends EventEmitter {
       const hash = await this.#safe.sendTransaction({
         ...request.params[0],
         chainId: this.#chainId,
-        gasLimit: gasLimit || '8000000',
+        gasLimit: gasLimit || '0',
         source: source || '0x0000000000000000000000000000000000000001',
         metadata: metadata || '0x',
         validUntil: validUntil || '0',

@@ -22,6 +22,7 @@ interface SignatureOption {
   metadata?: string
   source?: string
   validUntil?: string
+  gas?: string
 }
 
 class AvoSigner extends Signer implements TypedDataSigner {
@@ -97,9 +98,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
       source: options && options.source ? options.source : '0x0000000000000000000000000000000000000001',
       avoSafeNonce,
       validUntil: options && options.validUntil ? options.validUntil : '0',
-      gas: transactions.reduce((acc, curr) => {
-        return acc.add(curr.gasLimit ? curr.gasLimit.toString() : '8000000')
-      }, BigNumber.from(0)).toString()
+      // gas: transactions.reduce((acc, curr) => {
+      //   return acc.add(curr.gasLimit ? curr.gasLimit.toString() : '8000000')
+      // }, BigNumber.from(0)).toString(),
+      gas: options && options.gas ? options.gas : '0',
     }
   }
 
