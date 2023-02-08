@@ -1,6 +1,6 @@
 {
   "name": "avocado-safe",
-  "version": "0.0.47",
+  "version": "0.0.48",
   "type": "module",
   "files": [
     "dist"
@@ -8,6 +8,7 @@
   "main": "./dist/avocado-safe.cjs",
   "module": "./dist/avocado-safe.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/avocado-safe.js",
