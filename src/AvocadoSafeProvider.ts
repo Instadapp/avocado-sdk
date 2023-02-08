@@ -143,7 +143,7 @@ export class AvocadoSafeProvider extends EventEmitter {
                   symbol: 'USDC',
                   decimals: 18
                 },
-                rpcUrls: ['https://rpc.avocado.link/']
+                rpcUrls: ['https://rpc.avocado.instadapp.io/']
               }
             ]
           })
