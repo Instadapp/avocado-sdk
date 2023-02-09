@@ -1,18 +1,18 @@
 {
-  "name": "avocado-safe",
-  "version": "0.0.49",
+  "name": "@instadapp/avocado",
+  "version": "0.1.0",
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/avocado-safe.cjs",
-  "module": "./dist/avocado-safe.js",
+  "main": "./dist/avocado.cjs",
+  "module": "./dist/avocado.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "exports": {
     ".": {
-      "import": "./dist/avocado-safe.js",
-      "require": "./dist/avocado-safe.umd.cjs"
+      "import": "./dist/avocado.js",
+      "require": "./dist/avocado.umd.cjs"
     }
   },
   "scripts": {

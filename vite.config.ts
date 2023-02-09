@@ -10,9 +10,9 @@ export default defineConfig({
     lib: {
       formats: ["es", 'cjs'],
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'AvocadoSafe',
+      name: 'Avocado',
       // the proper extensions will be added
-      fileName: 'avocado-safe',
+      fileName: 'avocado',
     },
     rollupOptions: {
       external: [/@ethersproject/, "ethers", /@vue/, /@web3-react/],

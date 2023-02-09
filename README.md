@@ -1,34 +1,34 @@
-# avocado-safe
+# @instadapp/avocado
 
 ## Usage
 Install package:
 
 ```sh
 # npm
-npm install avocado-safe
+npm install @instadapp/avocado
 
 # yarn
-yarn add avocado-safe
+yarn add @instadapp/avocado
 
 # pnpm
-pnpm install avocado-safe
+pnpm install @instadapp/avocado
 ```
 
 Import:
 
 ```js
 // ESM
-import {} from "avocado-safe";
+import {} from "@instadapp/avocado";
 
 // CommonJS
-const {} = require("avocado-safe");
+const {} = require("@instadapp/avocado");
 ```
 
 
 ## Examples
 
 ```ts
-import { AvocadoSafeProvider } from 'avocado-safe'
+import { AvocadoSafeProvider } from '@instadapp/avocado'
 import { ethers } from 'ethers'
 import Web3 from 'web3'
 
@@ -45,7 +45,7 @@ console.log(await web3.eth.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08
 
 
 ```ts
-import { AvocadoInjectedConnector } from 'avocado-safe'
+import { AvocadoInjectedConnector } from '@instadapp/avocado'
 
 const avocado = new AvocadoInjectedConnector({ chainId: 137 })
 
@@ -54,7 +54,7 @@ await activate(avocado)
 ```
 
 ```ts
-import { AvocadoSafeProvider } from 'avocado-safe'
+import { AvocadoSafeProvider } from '@instadapp/avocado'
 
 const providerOptions = {
     'custom-avocado': {
