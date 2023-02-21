@@ -21,7 +21,6 @@ const confirmTransaction = (data: any) => {
 }
 
 const cancelTransaction = () => {
-    console.log("cancelTransaction")
     bridge.response("sendTransaction", null)
 
     transactionData.value = null

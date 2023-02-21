@@ -28,7 +28,7 @@ import type {
   PromiseOrValue,
 } from "./common";
 
-export declare namespace IAvoWallet {
+export declare namespace IAvoWalletV1 {
   export type ActionStruct = {
     target: PromiseOrValue<string>;
     data: PromiseOrValue<BytesLike>;
@@ -42,6 +42,44 @@ export declare namespace IAvoWallet {
   };
 }
 
+export declare namespace IAvoWalletV2 {
+  export type ActionStruct = {
+    operation: PromiseOrValue<BigNumberish>;
+    target: PromiseOrValue<string>;
+    data: PromiseOrValue<BytesLike>;
+    value: PromiseOrValue<BigNumberish>;
+  };
+
+  export type ActionStructOutput = [number, string, string, BigNumber] & {
+    operation: number;
+    target: string;
+    data: string;
+    value: BigNumber;
+  };
+
+  export type CastParamsStruct = {
+    validUntil: PromiseOrValue<BigNumberish>;
+    gas: PromiseOrValue<BigNumberish>;
+    source: PromiseOrValue<string>;
+    id: PromiseOrValue<BigNumberish>;
+    metadata: PromiseOrValue<BytesLike>;
+  };
+
+  export type CastParamsStructOutput = [
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    string
+  ] & {
+    validUntil: BigNumber;
+    gas: BigNumber;
+    source: string;
+    id: BigNumber;
+    metadata: string;
+  };
+}
+
 export interface ForwarderInterface extends utils.Interface {
   functions: {
     "avoFactory()": FunctionFragment;
@@ -51,8 +89,12 @@ export interface ForwarderInterface extends utils.Interface {
     "avoWalletVersionName(address)": FunctionFragment;
     "computeAddress(address)": FunctionFragment;
     "execute(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
+    "executeV1(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
+    "executeV2(address,(uint8,address,bytes,uint256)[],(uint256,uint256,address,uint256,bytes),bytes)": FunctionFragment;
     "initialize()": FunctionFragment;
     "verify(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
+    "verifyV1(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
+    "verifyV2(address,(uint8,address,bytes,uint256)[],(uint256,uint256,address,uint256,bytes),bytes)": FunctionFragment;
   };
 
   getFunction(
@@ -64,8 +106,12 @@ export interface ForwarderInterface extends utils.Interface {
       | "avoWalletVersionName"
       | "computeAddress"
       | "execute"
+      | "executeV1"
+      | "executeV2"
       | "initialize"
       | "verify"
+      | "verifyV1"
+      | "verifyV2"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -96,11 +142,32 @@ export interface ForwarderInterface extends utils.Interface {
     functionFragment: "execute",
     values: [
       PromiseOrValue<string>,
-      IAvoWallet.ActionStruct[],
+      IAvoWalletV1.ActionStruct[],
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "executeV1",
+    values: [
+      PromiseOrValue<string>,
+      IAvoWalletV1.ActionStruct[],
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "executeV2",
+    values: [
+      PromiseOrValue<string>,
+      IAvoWalletV2.ActionStruct[],
+      IAvoWalletV2.CastParamsStruct,
       PromiseOrValue<BytesLike>
     ]
   ): string;
@@ -112,11 +179,32 @@ export interface ForwarderInterface extends utils.Interface {
     functionFragment: "verify",
     values: [
       PromiseOrValue<string>,
-      IAvoWallet.ActionStruct[],
+      IAvoWalletV1.ActionStruct[],
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "verifyV1",
+    values: [
+      PromiseOrValue<string>,
+      IAvoWalletV1.ActionStruct[],
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "verifyV2",
+    values: [
+      PromiseOrValue<string>,
+      IAvoWalletV2.ActionStruct[],
+      IAvoWalletV2.CastParamsStruct,
       PromiseOrValue<BytesLike>
     ]
   ): string;
@@ -143,8 +231,12 @@ export interface ForwarderInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "execute", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "executeV1", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "executeV2", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "verify", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "verifyV1", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "verifyV2", data: BytesLike): Result;
 
   events: {
     "ExecuteFailed(address,address,address,bytes,string)": EventFragment;
@@ -244,11 +336,30 @@ export interface Forwarder extends BaseContract {
 
     execute(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
       metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    executeV1(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    executeV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
       signature_: PromiseOrValue<BytesLike>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -259,11 +370,30 @@ export interface Forwarder extends BaseContract {
 
     verify(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
       metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    verifyV1(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    verifyV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
       signature_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -295,11 +425,30 @@ export interface Forwarder extends BaseContract {
 
   execute(
     from_: PromiseOrValue<string>,
-    actions_: IAvoWallet.ActionStruct[],
+    actions_: IAvoWalletV1.ActionStruct[],
     validUntil_: PromiseOrValue<BigNumberish>,
     gas_: PromiseOrValue<BigNumberish>,
     source_: PromiseOrValue<string>,
     metadata_: PromiseOrValue<BytesLike>,
+    signature_: PromiseOrValue<BytesLike>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  executeV1(
+    from_: PromiseOrValue<string>,
+    actions_: IAvoWalletV1.ActionStruct[],
+    validUntil_: PromiseOrValue<BigNumberish>,
+    gas_: PromiseOrValue<BigNumberish>,
+    source_: PromiseOrValue<string>,
+    metadata_: PromiseOrValue<BytesLike>,
+    signature_: PromiseOrValue<BytesLike>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  executeV2(
+    from_: PromiseOrValue<string>,
+    actions_: IAvoWalletV2.ActionStruct[],
+    params_: IAvoWalletV2.CastParamsStruct,
     signature_: PromiseOrValue<BytesLike>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -310,11 +459,30 @@ export interface Forwarder extends BaseContract {
 
   verify(
     from_: PromiseOrValue<string>,
-    actions_: IAvoWallet.ActionStruct[],
+    actions_: IAvoWalletV1.ActionStruct[],
     validUntil_: PromiseOrValue<BigNumberish>,
     gas_: PromiseOrValue<BigNumberish>,
     source_: PromiseOrValue<string>,
     metadata_: PromiseOrValue<BytesLike>,
+    signature_: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  verifyV1(
+    from_: PromiseOrValue<string>,
+    actions_: IAvoWalletV1.ActionStruct[],
+    validUntil_: PromiseOrValue<BigNumberish>,
+    gas_: PromiseOrValue<BigNumberish>,
+    source_: PromiseOrValue<string>,
+    metadata_: PromiseOrValue<BytesLike>,
+    signature_: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  verifyV2(
+    from_: PromiseOrValue<string>,
+    actions_: IAvoWalletV2.ActionStruct[],
+    params_: IAvoWalletV2.CastParamsStruct,
     signature_: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -346,7 +514,7 @@ export interface Forwarder extends BaseContract {
 
     execute(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
@@ -355,15 +523,53 @@ export interface Forwarder extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    initialize(overrides?: CallOverrides): Promise<void>;
-
-    verify(
+    executeV1(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
       metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    executeV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    initialize(overrides?: CallOverrides): Promise<void>;
+
+    verify(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    verifyV1(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    verifyV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
       signature_: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -429,11 +635,30 @@ export interface Forwarder extends BaseContract {
 
     execute(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
       metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    executeV1(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    executeV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
       signature_: PromiseOrValue<BytesLike>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -444,11 +669,30 @@ export interface Forwarder extends BaseContract {
 
     verify(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
       metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    verifyV1(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    verifyV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
       signature_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -481,11 +725,30 @@ export interface Forwarder extends BaseContract {
 
     execute(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
       metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    executeV1(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    executeV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
       signature_: PromiseOrValue<BytesLike>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -496,11 +759,30 @@ export interface Forwarder extends BaseContract {
 
     verify(
       from_: PromiseOrValue<string>,
-      actions_: IAvoWallet.ActionStruct[],
+      actions_: IAvoWalletV1.ActionStruct[],
       validUntil_: PromiseOrValue<BigNumberish>,
       gas_: PromiseOrValue<BigNumberish>,
       source_: PromiseOrValue<string>,
       metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    verifyV1(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV1.ActionStruct[],
+      validUntil_: PromiseOrValue<BigNumberish>,
+      gas_: PromiseOrValue<BigNumberish>,
+      source_: PromiseOrValue<string>,
+      metadata_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    verifyV2(
+      from_: PromiseOrValue<string>,
+      actions_: IAvoWalletV2.ActionStruct[],
+      params_: IAvoWalletV2.CastParamsStruct,
       signature_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

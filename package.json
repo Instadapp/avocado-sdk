@@ -1,6 +1,6 @@
 {
   "name": "@instadapp/avocado",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "files": [
     "dist"
@@ -31,11 +31,13 @@
     "ethers": "^5.7.2",
     "events": "^3.3.0",
     "mitt": "^3.0.0",
+    "semver": "^7.3.8",
     "tiny-warning": "^1.0.3"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
     "@typechain/ethers-v5": "^10.2.0",
+    "@types/semver": "^7.3.13",
     "@vitejs/plugin-vue": "^4.0.0",
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.13",

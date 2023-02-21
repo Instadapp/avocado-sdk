@@ -25,7 +25,17 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "AvoForwarder__LegacyVersionNotDeployed",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "AvoForwarder__Unauthorized",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "AvoForwarder__VersionMismatch",
     type: "error",
   },
   {
@@ -146,9 +156,9 @@ const _abi = [
     name: "avoSafeNonce",
     outputs: [
       {
-        internalType: "uint96",
+        internalType: "uint88",
         name: "",
-        type: "uint96",
+        type: "uint88",
       },
     ],
     stateMutability: "view",
@@ -236,7 +246,7 @@ const _abi = [
             type: "uint256",
           },
         ],
-        internalType: "struct IAvoWallet.Action[]",
+        internalType: "struct IAvoWalletV1.Action[]",
         name: "actions_",
         type: "tuple[]",
       },
@@ -267,6 +277,143 @@ const _abi = [
       },
     ],
     name: "execute",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "target",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "data",
+            type: "bytes",
+          },
+          {
+            internalType: "uint256",
+            name: "value",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct IAvoWalletV1.Action[]",
+        name: "actions_",
+        type: "tuple[]",
+      },
+      {
+        internalType: "uint256",
+        name: "validUntil_",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "gas_",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "source_",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "metadata_",
+        type: "bytes",
+      },
+      {
+        internalType: "bytes",
+        name: "signature_",
+        type: "bytes",
+      },
+    ],
+    name: "executeV1",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            internalType: "uint8",
+            name: "operation",
+            type: "uint8",
+          },
+          {
+            internalType: "address",
+            name: "target",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "data",
+            type: "bytes",
+          },
+          {
+            internalType: "uint256",
+            name: "value",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct IAvoWalletV2.Action[]",
+        name: "actions_",
+        type: "tuple[]",
+      },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "validUntil",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "gas",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "source",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "id",
+            type: "uint256",
+          },
+          {
+            internalType: "bytes",
+            name: "metadata",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct IAvoWalletV2.CastParams",
+        name: "params_",
+        type: "tuple",
+      },
+      {
+        internalType: "bytes",
+        name: "signature_",
+        type: "bytes",
+      },
+    ],
+    name: "executeV2",
     outputs: [],
     stateMutability: "payable",
     type: "function",
@@ -303,7 +450,7 @@ const _abi = [
             type: "uint256",
           },
         ],
-        internalType: "struct IAvoWallet.Action[]",
+        internalType: "struct IAvoWalletV1.Action[]",
         name: "actions_",
         type: "tuple[]",
       },
@@ -334,6 +481,155 @@ const _abi = [
       },
     ],
     name: "verify",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "target",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "data",
+            type: "bytes",
+          },
+          {
+            internalType: "uint256",
+            name: "value",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct IAvoWalletV1.Action[]",
+        name: "actions_",
+        type: "tuple[]",
+      },
+      {
+        internalType: "uint256",
+        name: "validUntil_",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "gas_",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "source_",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "metadata_",
+        type: "bytes",
+      },
+      {
+        internalType: "bytes",
+        name: "signature_",
+        type: "bytes",
+      },
+    ],
+    name: "verifyV1",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            internalType: "uint8",
+            name: "operation",
+            type: "uint8",
+          },
+          {
+            internalType: "address",
+            name: "target",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "data",
+            type: "bytes",
+          },
+          {
+            internalType: "uint256",
+            name: "value",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct IAvoWalletV2.Action[]",
+        name: "actions_",
+        type: "tuple[]",
+      },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "validUntil",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "gas",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "source",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "id",
+            type: "uint256",
+          },
+          {
+            internalType: "bytes",
+            name: "metadata",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct IAvoWalletV2.CastParams",
+        name: "params_",
+        type: "tuple",
+      },
+      {
+        internalType: "bytes",
+        name: "signature_",
+        type: "bytes",
+      },
+    ],
+    name: "verifyV2",
     outputs: [
       {
         internalType: "bool",

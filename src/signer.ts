@@ -7,6 +7,7 @@ import { keccak256 } from '@ethersproject/solidity'
 import { BigNumber } from 'ethers'
 import { GaslessWallet, Forwarder, GaslessWallet__factory, Forwarder__factory } from './contracts'
 import { getRpcProvider } from './providers'
+import { parse } from 'semver';
 
 const forwardsInstances: Record<number, Forwarder> = {}
 
@@ -24,6 +25,43 @@ interface SignatureOption {
   validUntil?: string
   gas?: string
 }
+
+const typesV1 = {
+  Cast: [
+    { name: "actions", type: "Action[]" },
+    { name: "validUntil", type: "uint256" },
+    { name: "gas", type: "uint256" },
+    { name: "source", type: "address" },
+    { name: "metadata", type: "bytes" },
+    { name: "avoSafeNonce", type: "uint256" },
+  ],
+  Action: [
+    { name: "target", type: "address" },
+    { name: "data", type: "bytes" },
+    { name: "value", type: "uint256" },
+  ],
+}
+
+const typesV2 = {
+  Cast: [
+    { name: "actions", type: "Action[]" },
+    { name: "params", type: "CastParams" },
+    { name: "avoSafeNonce", type: "uint256" },
+  ],
+  Action: [
+    { name: "target", type: "address" },
+    { name: "data", type: "bytes" },
+    { name: "value", type: "uint256" },
+    { name: "operation", type: "uint256" },
+  ],
+  CastParams: [
+    { name: "validUntil", type: "uint256" },
+    { name: "gas", type: "uint256" },
+    { name: "source", type: "address" },
+    { name: "id", type: "uint256" },
+    { name: "metadata", type: "bytes" },
+  ],
+};
 
 class AvoSigner extends Signer implements TypedDataSigner {
   _gaslessWallet?: GaslessWallet
@@ -79,12 +117,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const forwarder = getForwarderContract(targetChainId)
 
     const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
-
-    console.log({
-      owner,
-      targetChainId,
-      avoSafeNonce,
-    })
 
     return {
       actions: transactions.map(transaction => (
@@ -190,9 +222,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
     gas,
     source,
     metadata,
-    avoSafeNonce
-    , chainId
-  }: { chainId: number, validUntil: string, metadata: string, avoSafeNonce: string, source: string, gas: string, actions: any[] }): Promise<string> {
+    avoSafeNonce,
+    chainId,
+    id,
+  }: { chainId: number, validUntil: string, metadata: string, avoSafeNonce: string, source: string, gas: string, actions: any[], id?: string }): Promise<string> {
     await this.syncAccount()
 
     let name = 'Instadapp-Gasless-Smart-Wallet'
@@ -208,6 +241,9 @@ class AvoSigner extends Signer implements TypedDataSigner {
       name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
     }
 
+    const versionMajor = parse(version)?.major || 1;
+    const isV2 = versionMajor === 2;
+
     // Creating domain for signing using gasless wallet address as the verifying contract
     const domain = {
       name,
@@ -218,24 +254,23 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
 
     // The named list of all type definitions
-    const types = {
-      Cast: [
-        { name: 'actions', type: 'Action[]' },
-        { name: 'validUntil', type: 'uint256' },
-        { name: 'gas', type: 'uint256' },
-        { name: 'source', type: 'address' },
-        { name: 'metadata', type: 'bytes' },
-        { name: 'avoSafeNonce', type: 'uint256' }
-      ],
-      Action: [
-        { name: 'target', type: 'address' },
-        { name: 'data', type: 'bytes' },
-        { name: 'value', type: 'uint256' }
-      ]
-    }
+    const types = isV2 ? typesV2: typesV1
 
     // Adding values for types mentioned
-    const value = {
+    const value = isV2 ? {
+      actions: actions.map((action) => ({
+        operation: action.operation ? String(action.operation) : "0",
+        ...action
+      })),
+      params: {
+        validUntil,
+        gas,
+        source,
+        id: id || '0',
+        metadata,
+      },
+      avoSafeNonce
+    } : {
       actions,
       validUntil,
       gas,

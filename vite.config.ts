@@ -15,7 +15,7 @@ export default defineConfig({
       fileName: 'avocado',
     },
     rollupOptions: {
-      external: [/@ethersproject/, "ethers", /@vue/, /@web3-react/],
+      external: [/@ethersproject/, "ethers", /@vue/, /@web3-react/, "semver"],
     },
   }
 })

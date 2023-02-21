@@ -13,15 +13,17 @@ document.querySelector('#app')!.innerHTML = `<button> Send Tx </button>`
 document.querySelector("#app button")!.addEventListener('click', async () => {
     let safeAddress = await provider.safe.getSafeAddress();
 
-    provider.request({
-        method: "eth_sendTransaction",
-        params: [
-            {
-                from: safeAddress,
-                to: safeAddress,
-            }
-        ]
-    })
+    console.log(
+        await provider.request({
+            method: "eth_sendTransaction",
+            params: [
+                {
+                    from: safeAddress,
+                    to: safeAddress,
+                }
+            ]
+        })
+    )
 })
 
 provider.request({
