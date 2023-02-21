@@ -198,7 +198,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
       options
     );
 
-    console.log({message})
     const signature = await this._buildValidSignature({
       message,
       chainId

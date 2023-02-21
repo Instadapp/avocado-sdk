@@ -351,11 +351,6 @@ const _abi = [
       {
         components: [
           {
-            internalType: "uint8",
-            name: "operation",
-            type: "uint8",
-          },
-          {
             internalType: "address",
             name: "target",
             type: "address",
@@ -368,6 +363,11 @@ const _abi = [
           {
             internalType: "uint256",
             name: "value",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "operation",
             type: "uint256",
           },
         ],
@@ -567,11 +567,6 @@ const _abi = [
       {
         components: [
           {
-            internalType: "uint8",
-            name: "operation",
-            type: "uint8",
-          },
-          {
             internalType: "address",
             name: "target",
             type: "address",
@@ -584,6 +579,11 @@ const _abi = [
           {
             internalType: "uint256",
             name: "value",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "operation",
             type: "uint256",
           },
         ],

@@ -44,17 +44,17 @@ export declare namespace IAvoWalletV1 {
 
 export declare namespace IAvoWalletV2 {
   export type ActionStruct = {
-    operation: PromiseOrValue<BigNumberish>;
     target: PromiseOrValue<string>;
     data: PromiseOrValue<BytesLike>;
     value: PromiseOrValue<BigNumberish>;
+    operation: PromiseOrValue<BigNumberish>;
   };
 
-  export type ActionStructOutput = [number, string, string, BigNumber] & {
-    operation: number;
+  export type ActionStructOutput = [string, string, BigNumber, BigNumber] & {
     target: string;
     data: string;
     value: BigNumber;
+    operation: BigNumber;
   };
 
   export type CastParamsStruct = {
@@ -90,11 +90,11 @@ export interface ForwarderInterface extends utils.Interface {
     "computeAddress(address)": FunctionFragment;
     "execute(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
     "executeV1(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
-    "executeV2(address,(uint8,address,bytes,uint256)[],(uint256,uint256,address,uint256,bytes),bytes)": FunctionFragment;
+    "executeV2(address,(address,bytes,uint256,uint256)[],(uint256,uint256,address,uint256,bytes),bytes)": FunctionFragment;
     "initialize()": FunctionFragment;
     "verify(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
     "verifyV1(address,(address,bytes,uint256)[],uint256,uint256,address,bytes,bytes)": FunctionFragment;
-    "verifyV2(address,(uint8,address,bytes,uint256)[],(uint256,uint256,address,uint256,bytes),bytes)": FunctionFragment;
+    "verifyV2(address,(address,bytes,uint256,uint256)[],(uint256,uint256,address,uint256,bytes),bytes)": FunctionFragment;
   };
 
   getFunction(
