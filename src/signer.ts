@@ -99,6 +99,12 @@ class AvoSigner extends Signer implements TypedDataSigner {
     if (this.provider) { this._chainId = this.provider.getNetwork().then(net => net.chainId) }
   }
 
+  async getGaslessWallet(targetChainId: number) {
+    const owner = await this.getOwnerAddress()
+    const safeAddress = await this._polygonForwarder.computeAddress(owner)
+    return GaslessWallet__factory.connect(safeAddress, getRpcProvider(targetChainId))
+  }
+
   async getAddress(): Promise<string> {
     await this.syncAccount()
     return this._gaslessWallet!.address
@@ -123,8 +129,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     let version;
 
+    let targetChainGaslessWallet = await this.getGaslessWallet(targetChainId);
+
     try {
-      version = await this._gaslessWallet!.DOMAIN_SEPARATOR_VERSION()
+      version = await targetChainGaslessWallet.DOMAIN_SEPARATOR_VERSION()
     } catch (error) {
       version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
     }
@@ -269,10 +277,11 @@ class AvoSigner extends Signer implements TypedDataSigner {
     let version;
 
     const forwarder = getForwarderContract(chainId)
+    let targetChainGaslessWallet = await this.getGaslessWallet(chainId);
 
     try {
-      version = await this._gaslessWallet!.DOMAIN_SEPARATOR_VERSION()
-      name = await this._gaslessWallet!.DOMAIN_SEPARATOR_NAME()
+      version = await targetChainGaslessWallet.DOMAIN_SEPARATOR_VERSION()
+      name = await targetChainGaslessWallet.DOMAIN_SEPARATOR_NAME()
     } catch (error) {
       version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
       name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')

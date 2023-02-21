@@ -20,7 +20,6 @@ document.querySelector("#app button")!.addEventListener('click', async () => {
                 {
                     from: safeAddress,
                     to: safeAddress,
-                    operation: 42
                 }
             ]
         })
