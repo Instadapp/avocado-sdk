@@ -24,7 +24,10 @@ interface SignatureOption {
   source?: string
   validUntil?: string
   gas?: string
+  id?: string
 }
+
+type RawTransaction = TransactionRequest & { operation?: string }
 
 const typesV1 = {
   Cast: [
@@ -105,18 +108,51 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return await this.signer.getAddress()
   }
 
-  async generateSignatureMessage(transactions: Deferrable<TransactionRequest>[], targetChainId: number, options?: SignatureOption) {
+  async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
 
     // if (await this._chainId !== 634) {
     //   throw new Error('Signer provider chain id should be 634')
     // }
 
-    const owner = await this.getOwnerAddress()
-
     const forwarder = getForwarderContract(targetChainId)
 
+    const owner = await this.getOwnerAddress()
+
     const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
+
+    let version;
+
+    try {
+      version = await this._gaslessWallet!.DOMAIN_SEPARATOR_VERSION()
+    } catch (error) {
+      version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+    }
+
+    const versionMajor = parse(version)?.major || 1;
+    const isV2 = versionMajor === 2;
+
+    if (isV2) {
+      return {
+        actions: transactions.map(transaction => (
+          {
+            operation: transaction.operation || "0",
+            target: transaction.to,
+            data: transaction.data || '0x',
+            value: transaction.value ? transaction.value.toString() : '0'
+          }
+        )),
+        params: {
+          metadata: options && options.metadata ? options.metadata : '0x',
+          source: options && options.source ? options.source : '0x0000000000000000000000000000000000000001',
+          id: options && options.id ? options.id : '0',
+          validUntil: options && options.validUntil ? options.validUntil : '0',
+          gas: options && options.gas ? options.gas : '0',
+        },
+        avoSafeNonce,
+      }
+    }
+
 
     return {
       actions: transactions.map(transaction => (
@@ -137,11 +173,11 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
   }
 
-  async sendTransaction(transaction: Deferrable<TransactionRequest>, options?: SignatureOption): Promise<TransactionResponse> {
+  async sendTransaction(transaction: Deferrable<RawTransaction>, options?: SignatureOption): Promise<TransactionResponse> {
     return await this.sendTransactions([transaction], await transaction.chainId, options);
   }
 
-  async sendTransactions(transactions: Deferrable<TransactionRequest>[], targetChainId?: Deferrable<number>, options?: SignatureOption): Promise<TransactionResponse> {
+  async sendTransactions(transactions: Deferrable<RawTransaction>[], targetChainId?: Deferrable<number>, options?: SignatureOption): Promise<TransactionResponse> {
     await this.syncAccount()
 
     if (await this._chainId !== 634) {
@@ -156,16 +192,21 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const owner = await this.getOwnerAddress()
 
-    const signatureData = await this.generateSignatureMessage(transactions, chainId, options);
+    const message = await this.generateSignatureMessage(
+      transactions,
+      chainId,
+      options
+    );
 
+    console.log({message})
     const signature = await this._buildValidSignature({
-      ...signatureData,
+      message,
       chainId
     })
 
     const transactionHash = await this._avoProvider.send('txn_broadcast', [
       signature,
-      signatureData,
+      message,
       owner,
       String(chainId),
       false
@@ -217,19 +258,16 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async _buildValidSignature({
-    actions,
-    validUntil,
-    gas,
-    source,
-    metadata,
-    avoSafeNonce,
+    message,
     chainId,
-    id,
-  }: { chainId: number, validUntil: string, metadata: string, avoSafeNonce: string, source: string, gas: string, actions: any[], id?: string }): Promise<string> {
+  }: {
+    message: any,
+    chainId: number,
+  }): Promise<string> {
     await this.syncAccount()
 
-    let name = 'Instadapp-Gasless-Smart-Wallet'
-    let version = '1.0.0'
+    let name;
+    let version;
 
     const forwarder = getForwarderContract(chainId)
 
@@ -254,30 +292,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
 
     // The named list of all type definitions
-    const types = isV2 ? typesV2: typesV1
+    const types = isV2 ? typesV2 : typesV1
 
     // Adding values for types mentioned
-    const value = isV2 ? {
-      actions: actions.map((action) => ({
-        operation: action.operation ? String(action.operation) : "0",
-        ...action
-      })),
-      params: {
-        validUntil,
-        gas,
-        source,
-        id: id || '0',
-        metadata,
-      },
-      avoSafeNonce
-    } : {
-      actions,
-      validUntil,
-      gas,
-      source,
-      metadata,
-      avoSafeNonce
-    }
+    const value = message
 
     return await this._signTypedData(domain, types, value)
   }
@@ -298,19 +316,19 @@ export function createSafe(signer: Signer, provider = signer.provider) {
       return avoSigner
     },
 
-    async generateSignatureMessage(transactions: Deferrable<TransactionRequest>[], targetChainId: number) {
-      return await avoSigner.generateSignatureMessage(transactions, targetChainId)
+    async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
+      return await avoSigner.generateSignatureMessage(transactions, targetChainId, options)
     },
 
-    async sendTransactions(transactions: Deferrable<TransactionRequest>[], targetChainId: number): Promise<TransactionResponse> {
-      return await avoSigner.sendTransactions(transactions, targetChainId)
+    async sendTransactions(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption): Promise<TransactionResponse> {
+      return await avoSigner.sendTransactions(transactions, targetChainId, options)
     },
 
-    async sendTransaction(transaction: Deferrable<TransactionRequest>, targetChainId?: number): Promise<TransactionResponse> {
+    async sendTransaction(transaction: Deferrable<RawTransaction>, targetChainId?: number, options?: SignatureOption): Promise<TransactionResponse> {
       return await avoSigner.sendTransaction({
         ...transaction,
         chainId: targetChainId || await transaction.chainId
-      })
+      }, options)
     },
 
     getSignerForChainId(chainId: number | string) {
