@@ -1,4 +1,5 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { AVOCADO_CHAIN_ID } from './config'
 
 export const RPC_URLS: { [chainId: number]: string } = {
     1: 'https://rpc.ankr.com/eth',
@@ -7,7 +8,7 @@ export const RPC_URLS: { [chainId: number]: string } = {
     250: 'https://rpc.ankr.com/fantom',
     10: 'https://rpc.ankr.com/optimism',
     42161: 'https://arb1.arbitrum.io/rpc',
-    634: 'https://rpc.avocado.instadapp.io',
+    [AVOCADO_CHAIN_ID]: 'https://rpc.avocado.instadapp.io',
     100: 'https://rpc.ankr.com/gnosis',
     56: 'https://rpc.ankr.com/bsc'
 }

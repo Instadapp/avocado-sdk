@@ -8,6 +8,7 @@ import { BigNumber } from 'ethers'
 import { GaslessWallet, Forwarder, GaslessWallet__factory, Forwarder__factory } from './contracts'
 import { getRpcProvider } from './providers'
 import { parse } from 'semver';
+import { AVOCADO_CHAIN_ID } from './config'
 
 const forwardsInstances: Record<number, Forwarder> = {}
 
@@ -76,7 +77,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   constructor(readonly signer: Signer, readonly provider = signer.provider) {
     super()
     this._polygonForwarder = getForwarderContract(137)
-    this._avoProvider = getRpcProvider(634)
+    this._avoProvider = getRpcProvider(AVOCADO_CHAIN_ID)
   }
 
   async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
@@ -116,10 +117,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
-
-    // if (await this._chainId !== 634) {
-    //   throw new Error('Signer provider chain id should be 634')
-    // }
 
     const forwarder = getForwarderContract(targetChainId)
 
@@ -188,8 +185,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async sendTransactions(transactions: Deferrable<RawTransaction>[], targetChainId?: Deferrable<number>, options?: SignatureOption): Promise<TransactionResponse> {
     await this.syncAccount()
 
-    if (await this._chainId !== 634) {
-      throw new Error('Signer provider chain id should be 634')
+    if (await this._chainId !== AVOCADO_CHAIN_ID) {
+      throw new Error(`Signer provider chain id should be ${AVOCADO_CHAIN_ID}`)
     }
 
     const chainId: number | undefined = this.customChainId || (await targetChainId)
@@ -294,7 +291,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const domain = {
       name,
       version,
-      chainId: '634',
+      chainId: String(AVOCADO_CHAIN_ID),
       salt: keccak256(['uint256'], [chainId]),
       verifyingContract: await this.getAddress()
     }

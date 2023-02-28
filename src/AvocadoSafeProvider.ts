@@ -5,6 +5,7 @@ import { register, unregister } from "./customElement"
 import { bridge } from "./bridge"
 import { getRpcProvider } from "./providers"
 import { EventEmitter } from 'events';
+import { AVOCADO_CHAIN_ID } from './config'
 
 
 declare global {
@@ -43,7 +44,7 @@ export class AvocadoSafeProvider extends EventEmitter {
 
     this.#safe = createSafe(provider.getSigner())
     this.#chainId = chainId
-    this.#avoNetworkProvider = getRpcProvider(634)
+    this.#avoNetworkProvider = getRpcProvider(AVOCADO_CHAIN_ID)
   }
 
   getChainId() {
@@ -109,7 +110,7 @@ export class AvocadoSafeProvider extends EventEmitter {
 
       let chainId = BigNumber.from(request.params[0].chainId).toNumber()
 
-      if (chainId === 634) return;
+      if (chainId === AVOCADO_CHAIN_ID) return;
 
       this.#chainId = chainId
 

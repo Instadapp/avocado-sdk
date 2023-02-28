@@ -9,6 +9,7 @@ import ExclamationSVG from "./icons/Exclamation.vue";
 import AvocadoSVG from "./icons/Avocado.vue";
 import { onMounted, ref, toRaw, computed } from "vue";
 import ChainLogo from "./ChainLogo.vue";
+import { AVOCADO_CHAIN_ID } from '../config';
 
 type CalculateFeeProps = {
   fee: string;
@@ -108,7 +109,7 @@ onMounted(async () => {
       multiplier: estimatedFee.multiplier,
       chainId: props.data.chainId,
     });
-  } catch(e) {
+  } catch (e) {
     console.log(e)
   } finally {
     loading.value = false;
@@ -133,7 +134,7 @@ const chainIdToName = (chainId: string | number) => {
       return "BSC";
     case "250":
       return "Fantom";
-    case "634":
+    case String(AVOCADO_CHAIN_ID):
       return "Avocado";
     default:
       throw new Error(`Unknown chainId ${chainId}`);
@@ -151,43 +152,27 @@ const cancel = () => {
 };
 </script>
 <template>
-  <div
-    class="relative z-[9999999] dark:text-white text-slate-900"
-    aria-labelledby="modal-title"
-    role="dialog"
-    aria-modal="true"
-  >
-    <div
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-      @click="cancel"
-    ></div>
+  <div class="relative z-[9999999] dark:text-white text-slate-900" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="cancel"></div>
     <div class="fixed inset-0 z-[9999999] overflow-y-auto">
-      <div
-        class="fixed inset-0 bg-gray-500 bg-opacity-25 transition-opacity"
-        @click="cancel"
-      ></div>
-      <div
-        class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
-      >
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-25 transition-opacity" @click="cancel"></div>
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div
-          class="relative transform overflow-hidden rounded-[10px] p-7.5 bg-white dark:bg-gray-950 text-left shadow-xl transition-all sm:w-full sm:max-w-[460px] sm:pt-[35px] sm:pb-10 sm:px-10"
-        >
+          class="relative transform overflow-hidden rounded-[10px] p-7.5 bg-white dark:bg-gray-950 text-left shadow-xl transition-all sm:w-full sm:max-w-[460px] sm:pt-[35px] sm:pb-10 sm:px-10">
           <div class="flex flex-col gap-7.5">
             <div class="flex justify-between items-center">
               <div class="text-lg font-semibold leading-[30px]">
                 Send Transaction
               </div>
               <div
-                class="py-2 px-2.5 dark:bg-gray-850 border dark:border-slate-750 bg-slate-50 border-slate-200 rounded-[10px]"
-              >
+                class="py-2 px-2.5 dark:bg-gray-850 border dark:border-slate-750 bg-slate-50 border-slate-200 rounded-[10px]">
                 <AvocadoSVG />
               </div>
             </div>
 
             <div class="flex flex-col gap-2.5">
-              <div
-                class="dark:bg-gray-850 bg-slate-50 flex flex-col gap-4 rounded-[10px] py-[14px] px-5"
-              >
+              <div class="dark:bg-gray-850 bg-slate-50 flex flex-col gap-4 rounded-[10px] py-[14px] px-5">
                 <div class="flex justify-between items-center">
                   <div class="text-slate-400 flex items-center gap-2.5">
                     <NetworkSVG />
@@ -198,65 +183,45 @@ const cancel = () => {
                     <span class="text-xs font-medium">
                       {{ chainIdToName(data.chainId) }}
                     </span>
-                    <ChainLogo
-                      class="w-[18px] h-[18px]"
-                      :chain="data.chainId"
-                    />
+                    <ChainLogo class="w-[18px] h-[18px]" :chain="data.chainId" />
                   </div>
                 </div>
 
                 <div class="flex justify-between items-center">
                   <div class="text-slate-400 flex items-center gap-2.5">
                     <GasSVG />
-                    <span class="text-xs leading-5 font-medium"
-                      >Estimated gas fees</span
-                    >
+                    <span class="text-xs leading-5 font-medium">Estimated gas fees</span>
                   </div>
 
                   <div class="flex items-center gap-2.5">
-                    <span
-                      v-if="loading"
-                      class="w-20 h-5 loading-box rounded-lg"
-                    ></span>
+                    <span v-if="loading" class="w-20 h-5 loading-box rounded-lg"></span>
                     <span v-else class="text-xs">{{ fee.formatted }}</span>
                     <UsdcSVG />
                   </div>
                 </div>
               </div>
-              <div
-                v-if="isBalaceNotEnough"
-                class="flex items-center justify-between font-semibold text-xs rounded-[10px] bg-red-alert bg-opacity-10 py-2.5 px-3"
-              >
+              <div v-if="isBalaceNotEnough"
+                class="flex items-center justify-between font-semibold text-xs rounded-[10px] bg-red-alert bg-opacity-10 py-2.5 px-3">
                 <p class="flex items-center gap-2.5 text-red-alert">
                   <ExclamationSVG />
 
                   Not enough USDC gas
                 </p>
 
-                <a
-                  target="_blank"
-                  href="https://avocado.instadapp.io/gas"
-                  class="h-[26px] hover:bg-blue-600 inline-flex items-center px-3 bg-blue-500 rounded-md text-white"
-                >
+                <a target="_blank" href="https://avocado.instadapp.io/gas"
+                  class="h-[26px] hover:bg-blue-600 inline-flex items-center px-3 bg-blue-500 rounded-md text-white">
                   Top-up
                 </a>
               </div>
             </div>
             <div class="flex justify-between items-center gap-4">
-              <button
-                type="button"
-                @click="cancel"
-                class="w-full hover:text-red-alert hover:bg-red-alert hover:bg-opacity-10 text-center h-[44px] text-sm font-semibold leading-5 bg-slate-800 text-white py-3 px-4 rounded-[10px]"
-              >
+              <button type="button" @click="cancel"
+                class="w-full hover:text-red-alert hover:bg-red-alert hover:bg-opacity-10 text-center h-[44px] text-sm font-semibold leading-5 bg-slate-800 text-white py-3 px-4 rounded-[10px]">
                 Reject
               </button>
 
-              <button
-                :disabled="loading || isBalaceNotEnough"
-                type="button"
-                @click="confirm"
-                class="w-full dark:disabled:bg-slate-800 dark:disabled:text-slate-500 disabled:text-slate-400 disabled:bg-slate-200 text-center h-[44px] text-sm font-semibold leading-5 hover:bg-blue-600 bg-blue-500 text-white py-3 px-4 rounded-[10px]"
-              >
+              <button :disabled="loading || isBalaceNotEnough" type="button" @click="confirm"
+                class="w-full dark:disabled:bg-slate-800 dark:disabled:text-slate-500 disabled:text-slate-400 disabled:bg-slate-200 text-center h-[44px] text-sm font-semibold leading-5 hover:bg-blue-600 bg-blue-500 text-white py-3 px-4 rounded-[10px]">
                 Submit
               </button>
             </div>
