@@ -1,6 +1,6 @@
 {
   "name": "@instadapp/avocado",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "type": "module",
   "files": [
     "dist"
@@ -19,8 +19,7 @@
     "generate:contracts": "rimraf src/contracts && typechain --target=ethers-v5 'abi/*.json' --out-dir 'src/contracts'",
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview",
-    "prepublishOnly": "yarn build"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",

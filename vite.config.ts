@@ -11,6 +11,7 @@ export default defineConfig(({ command, mode }) => {
     plugins: [vue(), dts()],
     define: {
       __AVOCADO_CHAIN_ID__: parseInt(env.AVOCADO_CHAIN_ID || "634"),
+      __AVOCADO_RPC__: JSON.stringify(env.AVOCADO_RPC || "https://rpc.avocado.instadapp.io"),
     },
     build: {
       lib: {

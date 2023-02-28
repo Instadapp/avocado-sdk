@@ -5,7 +5,8 @@ import { register, unregister } from "./customElement"
 import { bridge } from "./bridge"
 import { getRpcProvider } from "./providers"
 import { EventEmitter } from 'events';
-import { AVOCADO_CHAIN_ID } from './config'
+import { AVOCADO_CHAIN_ID, AVOCADO_RPC } from './config'
+import { hexValue } from  '@ethersproject/bytes'
 
 
 declare global {
@@ -14,15 +15,15 @@ declare global {
   }
 }
 
-const CHAIN_USDC_ADDRESSES: any = {
-  "137": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-  "10": "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
-  "42161": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-  "1": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-  "43114": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
-  "100": "0xddafbb505ad214d7b80b1f830fccc89b60fb7a83",
-  "56": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
-}
+// const CHAIN_USDC_ADDRESSES: any = {
+//   "137": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+//   "10": "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
+//   "42161": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+//   "1": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+//   "43114": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
+//   "100": "0xddafbb505ad214d7b80b1f830fccc89b60fb7a83",
+//   "56": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+// }
 
 const usdcToNativeAmount = async (amountInWei: BigNumber, chainId: number) => {
   return amountInWei.toString()
@@ -128,7 +129,7 @@ export class AvocadoSafeProvider extends EventEmitter {
     try {
       await this.#ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x27a' }]
+        params: [{ chainId: hexValue(AVOCADO_CHAIN_ID) }]
       })
     } catch (switchError: any) {
       if (switchError.code === 4902) {
@@ -137,14 +138,14 @@ export class AvocadoSafeProvider extends EventEmitter {
             method: 'wallet_addEthereumChain',
             params: [
               {
-                chainId: '0x27a',
+                chainId: hexValue(AVOCADO_CHAIN_ID),
                 chainName: 'Avocado Network',
                 nativeCurrency: {
                   name: 'Avocado',
                   symbol: 'USDC',
                   decimals: 18
                 },
-                rpcUrls: ['https://rpc.avocado.instadapp.io/']
+                rpcUrls: [AVOCADO_RPC]
               }
             ]
           })
