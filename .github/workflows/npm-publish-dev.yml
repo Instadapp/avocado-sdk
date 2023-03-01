@@ -1,0 +1,59 @@
+name: dev-npm-publish
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  dev-npm-publish:
+    name: dev-npm-publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get yarn cache directory path
+        id: yarn-cache
+        run: echo "YARN_CACHE_DIR=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+            ${{ steps.yarn-cache.outputs.YARN_CACHE_DIR }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Resolve version
+        id: version
+        run: echo "GIT_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: "Version based on commit: 0.0.0-dev.${{ steps.vars.outputs.sha_short }}"
+        run: npm version 0.0.0-dev.${{ steps.version.outputs.GIT_SHA_SHORT }} --force --no-git-tag-version
+
+      - name: Install Dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build
+        run: yarn run build
+        env:
+          AVOCADO_CHAIN_ID: 63400
+          AVOCADO_RPC: https://rpc.avocado.instad.app
+
+      - name: Test
+        run: yarn run test
+
+      - name: Publish Dev Release
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_AUTH_TOKEN }}
+          tag: dev
+          access: public
+
+
+
