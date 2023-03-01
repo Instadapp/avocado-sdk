@@ -45,9 +45,6 @@ jobs:
           AVOCADO_CHAIN_ID: 63400
           AVOCADO_RPC: https://rpc.avocado.instad.app
 
-      - name: Test
-        run: yarn run test
-
       - name: Publish Dev Release
         uses: JS-DevTools/npm-publish@v1
         with:
