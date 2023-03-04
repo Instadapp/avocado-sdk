@@ -26,6 +26,7 @@ interface SignatureOption {
   validUntil?: string
   gas?: string
   id?: string
+  avoSafeNonce?: string | number
 }
 
 type RawTransaction = TransactionRequest & { operation?: string }
@@ -132,7 +133,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const forwarder = getForwarderContract(targetChainId)
 
-    const avoSafeNonce = await this.getSafeNonce(targetChainId)
+    const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
 
     let version;
 
