@@ -115,14 +115,24 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return await this.signer.getAddress()
   }
 
+
+  async getSafeNonce(chainId: number): Promise<string> {
+    const forwarder = getForwarderContract(chainId)
+
+    const owner = await this.getOwnerAddress()
+
+    const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
+
+    return avoSafeNonce
+  }
+
+
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
 
     const forwarder = getForwarderContract(targetChainId)
 
-    const owner = await this.getOwnerAddress()
-
-    const avoSafeNonce = await forwarder.avoSafeNonce(owner).then(String)
+    const avoSafeNonce = await this.getSafeNonce(targetChainId)
 
     let version;
 
@@ -354,6 +364,10 @@ export function createSafe(signer: Signer, provider = signer.provider) {
 
     async getSafeAddress() {
       return await avoSigner.getAddress()
+    },
+
+    async getSafeNonce(chainId: number | string) {
+      return await avoSigner.getSafeNonce(Number(chainId))
     }
   }
 }
