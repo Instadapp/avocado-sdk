@@ -84,16 +84,14 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>, options?: SignatureOption): Promise<string> {
-    // if ('_signTypedData' in this.signer) {
-    //   // @ts-ignore
-    //   return await this.signer._signTypedData(domain, types, value)
-    // }
-
-    // throw new Error('_signTypedData is not supported')
     await this.syncAccount()
 
     if (!domain.chainId) {
       throw Error('_signTypedData: Domain without chainId is not supported yet')
+      // if ('_signTypedData' in this.signer) {
+      //   // @ts-ignore
+      //   return await this.signer._signTypedData(domain, types, value)
+      // }
     } else {
       const targetChainId = Number(domain.chainId)
 
