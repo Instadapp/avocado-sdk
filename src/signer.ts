@@ -3,6 +3,8 @@ import { TransactionResponse, Provider, TransactionRequest } from '@ethersprojec
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
 import { Deferrable } from '@ethersproject/properties'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { _TypedDataEncoder } from '@ethersproject/Hash'
+import { Interface } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/solidity'
 import { BigNumber } from 'ethers'
 import { GaslessWallet, Forwarder, GaslessWallet__factory, Forwarder__factory } from './contracts'
@@ -81,13 +83,41 @@ class AvoSigner extends Signer implements TypedDataSigner {
     this._avoProvider = getRpcProvider(AVOCADO_CHAIN_ID)
   }
 
-  async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
-    if ('_signTypedData' in this.signer) {
-      // @ts-ignore
-      return await this.signer._signTypedData(domain, types, value)
+  async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>, options?: SignatureOption): Promise<string> {
+    // if ('_signTypedData' in this.signer) {
+    //   // @ts-ignore
+    //   return await this.signer._signTypedData(domain, types, value)
+    // }
+
+    // throw new Error('_signTypedData is not supported')
+    await this.syncAccount()
+
+    if (!domain.chainId) {
+      throw Error('_signTypedData: Domain without chainId is not supported yet')
+    } else {
+      const targetChainId = Number(domain.chainId)
+
+      const hash = _TypedDataEncoder.hash(domain, types, value)
+
+      const avoSafeABI = [
+        "function approveHash(bytes32 _hash) public"
+      ]
+
+      const approveHashCalldata = (new Interface(avoSafeABI)).encodeFunctionData("approveHash", [hash])
+
+      // Transaction to approve a hash
+      const transaction: Deferrable<RawTransaction> =  {
+          to: this._gaslessWallet?.address,
+          data: approveHashCalldata,
+          operation: "0",
+          value: "0"
+        }
+      
+
+      const tx = await this.sendTransactions([transaction], targetChainId, options);
+      return tx.hash
     }
 
-    throw new Error('_signTypedData is not supported')
   }
 
   async syncAccount(): Promise<void> {
