@@ -20,7 +20,7 @@ export const getForwarderContract = (chainId: number) => {
   return forwardsInstances[chainId]
 }
 
-interface SignatureOption {
+export interface SignatureOption {
   metadata?: string
   source?: string
   validUntil?: string
@@ -29,7 +29,7 @@ interface SignatureOption {
   avoSafeNonce?: string | number
 }
 
-type RawTransaction = TransactionRequest & { operation?: string }
+export type RawTransaction = TransactionRequest & { operation?: string }
 
 const typesV1 = {
   Cast: [
