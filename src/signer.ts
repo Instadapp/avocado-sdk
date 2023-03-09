@@ -9,6 +9,7 @@ import { GaslessWallet, Forwarder, GaslessWallet__factory, Forwarder__factory } 
 import { getRpcProvider } from './providers'
 import { parse } from 'semver';
 import { AVOCADO_CHAIN_ID } from './config'
+import { signTypedData } from './utils/signTypedData'
 
 const forwardsInstances: Record<number, Forwarder> = {}
 
@@ -82,12 +83,19 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
-    if ('_signTypedData' in this.signer) {
-      // @ts-ignore
-      return await this.signer._signTypedData(domain, types, value)
+    const result = await signTypedData(this.signer.provider as any,
+      await this.getOwnerAddress(),
+      {
+        domain,
+        types,
+        value
+      })
+
+    if (!result.signature) {
+      throw Error("Failed to get signature");
     }
 
-    throw new Error('_signTypedData is not supported')
+    return result.signature
   }
 
   async syncAccount(): Promise<void> {
