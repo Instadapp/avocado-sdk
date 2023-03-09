@@ -1,11 +1,12 @@
-import type { providers } from 'ethers';
-import { utils } from 'ethers';
-
+// https://github.com/enzymefinance/protocol/blob/c9621dd5f8234bd45126772fc626252a38d46eee/packages/ethers/src/utils/signTypedData.ts
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { hexlify } from '@ethersproject/bytes';
+import { toUtf8Bytes } from '@ethersproject/strings';
 import type { TypedData } from './typedData';
 import { getTypedDataMessage } from './typedData';
 
 export async function signTypedData(
-  provider: providers.JsonRpcProvider,
+  provider: JsonRpcProvider,
   address: string,
   data: TypedData,
 ): Promise<{ signature?: string; method?: string; cancelled?: boolean }> {
@@ -40,7 +41,7 @@ export async function signTypedData(
   // Fallback if `eth_signedTypedData` and `eth_signTypedData_v4` are not supported
   try {
     const method = 'eth_sign';
-    const signature = await provider.send(method, [address.toLowerCase(), utils.hexlify(utils.toUtf8Bytes(message))]);
+    const signature = await provider.send(method, [address.toLowerCase(), hexlify(toUtf8Bytes(message))]);
 
     return { method, signature };
   } catch (error) {

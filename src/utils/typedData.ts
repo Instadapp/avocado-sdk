@@ -1,3 +1,5 @@
+// https://github.com/enzymefinance/protocol/blob/c9621dd5f8234bd45126772fc626252a38d46eee/packages/ethers/src/utils/typedData.ts
+
 import type { TypedDataDomain, TypedDataField } from '@ethersproject/abstract-signer';
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { _TypedDataEncoder } from '@ethersproject/hash';

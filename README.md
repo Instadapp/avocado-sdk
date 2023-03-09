@@ -83,6 +83,7 @@ const providerOptions = {
 
 ```ts
 const { createSafe } = require('@instadapp/avocado')
+import { createSafe } from '@instadapp/avocado'
 
 // Should be connected to chainId 634 (https://rpc.avocado.instadapp.io), before doing any transaction
 const provider = new ethers.providers.Web3Provider(window.ethereum, "any")
