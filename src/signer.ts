@@ -367,7 +367,7 @@ export function createSafe(signer: Signer, provider = signer.provider) {
       })
     },
 
-    async getOwnerddress() {
+    async getOwnerAddress() {
       return await signer.getAddress()
     },
 
