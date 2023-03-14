@@ -82,7 +82,7 @@ export class AvocadoSafeProvider extends EventEmitter {
       const response = await bridge.request('sendTransaction', {
         raw: request.params[0],
         chainId: this.#chainId,
-        signer: await this.#safe.getOwnerddress(),
+        signer: await this.#safe.getOwnerAddress(),
         message: await this.safe.generateSignatureMessage([
           request.params[0],
         ], this.#chainId)

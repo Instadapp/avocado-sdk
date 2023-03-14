@@ -13,7 +13,7 @@ const onSafeProvider = async (event: any) => {
     loaded.value = true
     provider.value = event;
     safeAddress.value = await provider.value!.safe.getSafeAddress()
-    accountAddress.value = await provider.value!.safe.getOwnerddress()
+    accountAddress.value = await provider.value!.safe.getOwnerAddress()
 }
 
 onMounted(() => {
