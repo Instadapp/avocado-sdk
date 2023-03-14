@@ -12,6 +12,7 @@ export default defineConfig(({ command, mode }) => {
     define: {
       __AVOCADO_CHAIN_ID__: parseInt(env.AVOCADO_CHAIN_ID || "634"),
       __AVOCADO_RPC__: JSON.stringify(env.AVOCADO_RPC || "https://rpc.avocado.instadapp.io"),
+      __AVOCADO_FORWARDER_PROXY_ADDRESS__: JSON.stringify(env.AVOCADO_FORWARDER_PROXY_ADDRESS || "0x375F6B0CD12b34Dc28e34C26853a37012C24dDE5"),
     },
     build: {
       lib: {

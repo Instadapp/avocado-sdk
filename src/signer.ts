@@ -8,14 +8,14 @@ import { BigNumber } from 'ethers'
 import { GaslessWallet, Forwarder, GaslessWallet__factory, Forwarder__factory } from './contracts'
 import { getRpcProvider } from './providers'
 import { parse } from 'semver';
-import { AVOCADO_CHAIN_ID } from './config'
+import { AVOCADO_CHAIN_ID, AVOCADO_FORWARDER_PROXY_ADDRESS } from './config'
 import { signTypedData } from './utils/signTypedData'
 
 const forwardsInstances: Record<number, Forwarder> = {}
 
 export const getForwarderContract = (chainId: number) => {
   if (!forwardsInstances[chainId]) {
-    forwardsInstances[chainId] = Forwarder__factory.connect('0x375F6B0CD12b34Dc28e34C26853a37012C24dDE5', getRpcProvider(chainId))
+    forwardsInstances[chainId] = Forwarder__factory.connect(AVOCADO_FORWARDER_PROXY_ADDRESS, getRpcProvider(chainId))
   }
 
   return forwardsInstances[chainId]

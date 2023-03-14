@@ -44,6 +44,7 @@ jobs:
         env:
           AVOCADO_CHAIN_ID: 63400
           AVOCADO_RPC: https://rpc.avocado.instad.app
+          AVOCADO_FORWARDER_PROXY_ADDRESS: 0x3760C57787f5d5A8904a6D1818a7d1cA86fAf40D
 
       - name: Publish Dev Release
         uses: JS-DevTools/npm-publish@v1
