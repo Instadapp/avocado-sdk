@@ -10,7 +10,8 @@ export const RPC_URLS: { [chainId: number]: string } = {
     42161: 'https://arb1.arbitrum.io/rpc',
     [AVOCADO_CHAIN_ID]: AVOCADO_RPC,
     100: 'https://rpc.ankr.com/gnosis',
-    56: 'https://rpc.ankr.com/bsc'
+    56: 'https://rpc.ankr.com/bsc',
+    1101 : 'https://rpc.ankr.com/polygon_zkevm'
 }
 
 const rpcInstances: Record<string, StaticJsonRpcProvider> = {}
