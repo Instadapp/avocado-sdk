@@ -168,7 +168,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
         )),
         params: {
           metadata: options && options.metadata ? options.metadata : '0x',
-          source: options && options.source ? options.source : '0x0000000000000000000000000000000000000001',
+          source: options && options.source ? options.source : '0x000000000000000000000000000000000000Cad0',
           id: options && options.id ? options.id : '0',
           validUntil: options && options.validUntil ? options.validUntil : '0',
           gas: options && options.gas ? options.gas : '0',
@@ -187,7 +187,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
         }
       )),
       metadata: options && options.metadata ? options.metadata : '0x',
-      source: options && options.source ? options.source : '0x0000000000000000000000000000000000000001',
+      source: options && options.source ? options.source : '0x000000000000000000000000000000000000Cad0',
       avoSafeNonce,
       validUntil: options && options.validUntil ? options.validUntil : '0',
       // gas: transactions.reduce((acc, curr) => {

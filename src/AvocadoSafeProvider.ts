@@ -98,7 +98,7 @@ export class AvocadoSafeProvider extends EventEmitter {
         ...request.params[0],
         chainId: this.#chainId,
         gasLimit: gasLimit || '0',
-        source: source || '0x0000000000000000000000000000000000000001',
+        source: source || '0x000000000000000000000000000000000000Cad0',
         metadata: metadata || '0x',
         validUntil: validUntil || '0',
       })
