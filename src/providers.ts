@@ -11,7 +11,8 @@ export const RPC_URLS: { [chainId: number]: string } = {
     [AVOCADO_CHAIN_ID]: AVOCADO_RPC,
     100: 'https://rpc.ankr.com/gnosis',
     56: 'https://rpc.ankr.com/bsc',
-    1101 : 'https://rpc.ankr.com/polygon_zkevm'
+    1101 : 'https://rpc.ankr.com/polygon_zkevm',
+    1313161554: "https://mainnet.aurora.dev",
 }
 
 const rpcInstances: Record<string, StaticJsonRpcProvider> = {}
