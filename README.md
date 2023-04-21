@@ -28,22 +28,6 @@ const {} = require("@instadapp/avocado");
 ## Examples
 
 ```ts
-import { AvocadoSafeProvider } from '@instadapp/avocado'
-import { ethers } from 'ethers'
-import Web3 from 'web3'
-
-const ethereum = new AvocadoSafeProvider({ chainId: 137 }) // window.etherem
-await ethereum.enable()
-
-const provider = new ethers.providers.Web3Provider(ethereum, "any")
-const web3 = new Web3(ethereum)
-
-console.log(await provider.listAccounts())
-console.log(await provider.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
-console.log(await web3.eth.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
-```
-
-```ts
 import { createSafe } from '@instadapp/avocado'
 
 // Should be connected to chainId 634 (https://rpc.avocado.instadapp.io), before doing any transaction
@@ -89,6 +73,22 @@ const erc20 = new ethers.Contract(
 )
 
 await erc20.transfer("0x910E413DBF3F6276Fe8213fF656726bDc142E08E", 69420)
+```
+
+```ts
+import { AvocadoSafeProvider } from '@instadapp/avocado'
+import { ethers } from 'ethers'
+import Web3 from 'web3'
+
+const ethereum = new AvocadoSafeProvider({ chainId: 137 }) // window.etherem
+await ethereum.enable()
+
+const provider = new ethers.providers.Web3Provider(ethereum, "any")
+const web3 = new Web3(ethereum)
+
+console.log(await provider.listAccounts())
+console.log(await provider.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
+console.log(await web3.eth.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
 ```
 
 ```ts
