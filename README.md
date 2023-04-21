@@ -43,44 +43,6 @@ console.log(await provider.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08
 console.log(await web3.eth.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
 ```
 
-
-```ts
-import { AvocadoInjectedConnector } from '@instadapp/avocado'
-
-const avocado = new AvocadoInjectedConnector({ chainId: 137 })
-
-const { activate } = useWeb3() // web3-react v6 or @instadapp/vue-web3
-await activate(avocado)
-```
-
-```ts
-import { AvocadoSafeProvider } from '@instadapp/avocado'
-
-const providerOptions = {
-    'custom-avocado': {
-      display: {
-        logo: SVGavocado,
-        name: 'Avocado',
-        description: '',
-      },
-      package: AvocadoSafeProvider,
-
-      options: {
-        chainId: 137,
-      },
-
-      connector: async (ProviderPackage, options) => {
-        const provider = new ProviderPackage(options)
-
-        await provider.enable()
-
-        return provider
-      },
-    }
-}
-```
-
-
 ```ts
 import { createSafe } from '@instadapp/avocado'
 
@@ -127,4 +89,40 @@ const erc20 = new ethers.Contract(
 )
 
 await erc20.transfer("0x910E413DBF3F6276Fe8213fF656726bDc142E08E", 69420)
+```
+
+```ts
+import { AvocadoInjectedConnector } from '@instadapp/avocado'
+
+const avocado = new AvocadoInjectedConnector({ chainId: 137 })
+
+const { activate } = useWeb3() // web3-react v6 or @instadapp/vue-web3
+await activate(avocado)
+```
+
+```ts
+import { AvocadoSafeProvider } from '@instadapp/avocado'
+
+const providerOptions = {
+    'custom-avocado': {
+      display: {
+        logo: SVGavocado,
+        name: 'Avocado',
+        description: '',
+      },
+      package: AvocadoSafeProvider,
+
+      options: {
+        chainId: 137,
+      },
+
+      connector: async (ProviderPackage, options) => {
+        const provider = new ProviderPackage(options)
+
+        await provider.enable()
+
+        return provider
+      },
+    }
+}
 ```
