@@ -280,6 +280,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return this
   }
 
+  async buildSignature({ message, chainId }: { message: any, chainId: number }) {
+    return await this._buildValidSignature({ message, chainId })
+  }
+
   async _buildValidSignature({
     message,
     chainId,
@@ -342,6 +346,13 @@ export function createSafe(signer: Signer, provider = signer.provider) {
 
     async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
       return await avoSigner.generateSignatureMessage(transactions, targetChainId, options)
+    },
+
+    async buildSignature(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, chainId: number) {
+      return await avoSigner.buildSignature({
+        message,
+        chainId
+      })
     },
 
     async sendTransactions(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption): Promise<TransactionResponse> {
