@@ -366,6 +366,26 @@ export function createSafe(signer: Signer, provider = signer.provider) {
       }, options)
     },
 
+    async estimateFee(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption): Promise<{
+      fee: string,
+      multiplier: string,
+      discount?: { amount: string, program: string, name: string, description: string }
+    }> {
+      const message = await avoSigner.generateSignatureMessage(transactions, targetChainId, options)
+
+      const response = await avoSigner._avoProvider.send('txn_estimateFeeWithoutSignature', [
+        message,
+        await signer.getAddress(),
+        targetChainId,
+      ])
+
+      return {
+        ...response,
+        fee: BigNumber.from(response.fee).toString(),
+        multiplier: BigNumber.from(response.multiplier).toString(),
+      }
+    },
+
     getSignerForChainId(chainId: number | string) {
       return new Proxy(avoSigner, {
         get(target, p, receiver) {
