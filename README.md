@@ -52,7 +52,11 @@ await safe.sendTransaction({
 
 await safe.sendTransactions([
     { to: "0x910E413DBF3F6276Fe8213fF656726bDc142E08E", value: 42 }
-    { to: "0x910E413DBF3F6276Fe8213fF656726bDc142E08E", value: 69}
+    { to: "0x910E413DBF3F6276Fe8213fF656726bDc142E08E", value: 69 }
+], 137)
+
+await safe.estimateFee([
+    { to: "0x910E413DBF3F6276Fe8213fF656726bDc142E08E", value: 0 }
 ], 137)
 
 await safe.getSigner().sendTransaction({
