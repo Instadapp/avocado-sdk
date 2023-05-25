@@ -1,32 +1,22 @@
-import { AvocadoSafeProvider, createSafe } from "./src"
+import { ethers } from "ethers"
+import { createSafe } from "./src"
 
-const provider = new AvocadoSafeProvider({ chainId: 137 })
+const provider = new ethers.providers.Web3Provider(window.ethereum, "any")
 
-provider.enable().then(console.log)
+await provider.send("eth_requestAccounts", []);
 
-//@ts-ignore
-window.provider = provider
+const safe = createSafe(provider.getSigner())
 
 document.querySelector('#app')!.innerHTML = `<button> Send Tx </button>`
 
-
 document.querySelector("#app button")!.addEventListener('click', async () => {
-    let safeAddress = await provider.safe.getSafeAddress();
+    let safeAddress = await safe.getSafeAddress();
 
     console.log(
-        await provider.request({
-            method: "eth_sendTransaction",
-            params: [
-                {
-                    from: safeAddress,
-                    to: safeAddress,
-                }
-            ]
+        await safe.sendTransaction({
+            from: safeAddress,
+            to: safeAddress,
+            chainId: 137
         })
     )
 })
-
-provider.request({
-    method: "eth_getBalance",
-    params: ["0x910E413DBF3F6276Fe8213fF656726bDc142E08E", "latest"]
-}).then(console.log)

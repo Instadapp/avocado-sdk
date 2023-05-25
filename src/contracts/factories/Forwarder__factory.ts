@@ -34,9 +34,42 @@ const _abi = [
     type: "error",
   },
   {
-    inputs: [],
-    name: "AvoForwarder__VersionMismatch",
-    type: "error",
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "auth",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "status",
+        type: "bool",
+      },
+    ],
+    name: "AuthUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "broadcaster",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "status",
+        type: "bool",
+      },
+    ],
+    name: "BroadcasterUpdated",
+    type: "event",
   },
   {
     anonymous: false,
@@ -120,6 +153,44 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "auths",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "avoFactory",
     outputs: [
@@ -127,6 +198,57 @@ const _abi = [
         internalType: "contract IAvoFactory",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "avoMultiSafeBytecode",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner_",
+        type: "address",
+      },
+    ],
+    name: "avoMultisigVersion",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner_",
+        type: "address",
+      },
+    ],
+    name: "avoMultisigVersionName",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
       },
     ],
     stateMutability: "view",
@@ -154,6 +276,25 @@ const _abi = [
       },
     ],
     name: "avoSafeNonce",
+    outputs: [
+      {
+        internalType: "uint88",
+        name: "",
+        type: "uint88",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner_",
+        type: "address",
+      },
+    ],
+    name: "avoSafeNonceMultisig",
     outputs: [
       {
         internalType: "uint88",
@@ -206,11 +347,49 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "broadcasters",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "owner_",
         type: "address",
       },
     ],
     name: "computeAddress",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner_",
+        type: "address",
+      },
+    ],
+    name: "computeAddressMultisig",
     outputs: [
       {
         internalType: "address",
@@ -277,6 +456,122 @@ const _abi = [
       },
     ],
     name: "execute",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            components: [
+              {
+                internalType: "address",
+                name: "target",
+                type: "address",
+              },
+              {
+                internalType: "bytes",
+                name: "data",
+                type: "bytes",
+              },
+              {
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+              {
+                internalType: "uint256",
+                name: "operation",
+                type: "uint256",
+              },
+            ],
+            internalType: "struct AvoCoreStructs.Action[]",
+            name: "actions",
+            type: "tuple[]",
+          },
+          {
+            internalType: "uint256",
+            name: "id",
+            type: "uint256",
+          },
+          {
+            internalType: "int256",
+            name: "avoSafeNonce",
+            type: "int256",
+          },
+          {
+            internalType: "bytes32",
+            name: "salt",
+            type: "bytes32",
+          },
+          {
+            internalType: "address",
+            name: "source",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "metadata",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastParams",
+        name: "params_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "gas",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validUntil",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validAfter",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "gasPrice",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastForwardParams",
+        name: "forwardParams_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "bytes",
+            name: "signature",
+            type: "bytes",
+          },
+          {
+            internalType: "address",
+            name: "signer",
+            type: "address",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.SignatureParams[]",
+        name: "signaturesParams_",
+        type: "tuple[]",
+      },
+    ],
+    name: "executeMultisigV3",
     outputs: [],
     stateMutability: "payable",
     type: "function",
@@ -419,8 +714,269 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            components: [
+              {
+                internalType: "address",
+                name: "target",
+                type: "address",
+              },
+              {
+                internalType: "bytes",
+                name: "data",
+                type: "bytes",
+              },
+              {
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+              {
+                internalType: "uint256",
+                name: "operation",
+                type: "uint256",
+              },
+            ],
+            internalType: "struct AvoCoreStructs.Action[]",
+            name: "actions",
+            type: "tuple[]",
+          },
+          {
+            internalType: "uint256",
+            name: "id",
+            type: "uint256",
+          },
+          {
+            internalType: "int256",
+            name: "avoSafeNonce",
+            type: "int256",
+          },
+          {
+            internalType: "bytes32",
+            name: "salt",
+            type: "bytes32",
+          },
+          {
+            internalType: "address",
+            name: "source",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "metadata",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastParams",
+        name: "params_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "gas",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validUntil",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validAfter",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "gasPrice",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastForwardParams",
+        name: "forwardParams_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "bytes",
+            name: "signature",
+            type: "bytes",
+          },
+          {
+            internalType: "address",
+            name: "signer",
+            type: "address",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.SignatureParams",
+        name: "signatureParams_",
+        type: "tuple",
+      },
+    ],
+    name: "executeV3",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner_",
+        type: "address",
+      },
+    ],
     name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "auth_",
+        type: "address",
+      },
+    ],
+    name: "isAuth",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "broadcaster_",
+        type: "address",
+      },
+    ],
+    name: "isBroadcaster",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner_",
+        type: "address",
+      },
+      {
+        internalType: "address[]",
+        name: "allowedBroadcasters_",
+        type: "address[]",
+      },
+    ],
+    name: "reinitialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "addr",
+            type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "value",
+            type: "bool",
+          },
+        ],
+        internalType: "struct AvoForwarderStructs.AddressBool[]",
+        name: "authsStatus_",
+        type: "tuple[]",
+      },
+    ],
+    name: "updateAuths",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "addr",
+            type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "value",
+            type: "bool",
+          },
+        ],
+        internalType: "struct AvoForwarderStructs.AddressBool[]",
+        name: "broadcastersStatus_",
+        type: "tuple[]",
+      },
+    ],
+    name: "updateBroadcasters",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -481,6 +1037,128 @@ const _abi = [
       },
     ],
     name: "verify",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            components: [
+              {
+                internalType: "address",
+                name: "target",
+                type: "address",
+              },
+              {
+                internalType: "bytes",
+                name: "data",
+                type: "bytes",
+              },
+              {
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+              {
+                internalType: "uint256",
+                name: "operation",
+                type: "uint256",
+              },
+            ],
+            internalType: "struct AvoCoreStructs.Action[]",
+            name: "actions",
+            type: "tuple[]",
+          },
+          {
+            internalType: "uint256",
+            name: "id",
+            type: "uint256",
+          },
+          {
+            internalType: "int256",
+            name: "avoSafeNonce",
+            type: "int256",
+          },
+          {
+            internalType: "bytes32",
+            name: "salt",
+            type: "bytes32",
+          },
+          {
+            internalType: "address",
+            name: "source",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "metadata",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastParams",
+        name: "params_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "gas",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validUntil",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validAfter",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "gasPrice",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastForwardParams",
+        name: "forwardParams_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "bytes",
+            name: "signature",
+            type: "bytes",
+          },
+          {
+            internalType: "address",
+            name: "signer",
+            type: "address",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.SignatureParams[]",
+        name: "signaturesParams_",
+        type: "tuple[]",
+      },
+    ],
+    name: "verifyMultisigV3",
     outputs: [
       {
         internalType: "bool",
@@ -630,6 +1308,128 @@ const _abi = [
       },
     ],
     name: "verifyV2",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from_",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            components: [
+              {
+                internalType: "address",
+                name: "target",
+                type: "address",
+              },
+              {
+                internalType: "bytes",
+                name: "data",
+                type: "bytes",
+              },
+              {
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+              {
+                internalType: "uint256",
+                name: "operation",
+                type: "uint256",
+              },
+            ],
+            internalType: "struct AvoCoreStructs.Action[]",
+            name: "actions",
+            type: "tuple[]",
+          },
+          {
+            internalType: "uint256",
+            name: "id",
+            type: "uint256",
+          },
+          {
+            internalType: "int256",
+            name: "avoSafeNonce",
+            type: "int256",
+          },
+          {
+            internalType: "bytes32",
+            name: "salt",
+            type: "bytes32",
+          },
+          {
+            internalType: "address",
+            name: "source",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "metadata",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastParams",
+        name: "params_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "gas",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validUntil",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validAfter",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "gasPrice",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.CastForwardParams",
+        name: "forwardParams_",
+        type: "tuple",
+      },
+      {
+        components: [
+          {
+            internalType: "bytes",
+            name: "signature",
+            type: "bytes",
+          },
+          {
+            internalType: "address",
+            name: "signer",
+            type: "address",
+          },
+        ],
+        internalType: "struct AvoCoreStructs.SignatureParams",
+        name: "signatureParams_",
+        type: "tuple",
+      },
+    ],
+    name: "verifyV3",
     outputs: [
       {
         internalType: "bool",

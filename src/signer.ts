@@ -25,9 +25,12 @@ export interface SignatureOption {
   metadata?: string
   source?: string
   validUntil?: string
+  validAfter?: string
   gas?: string
+  gasPrice?: string
   id?: string
   avoSafeNonce?: string | number
+  salt?: string
 }
 
 export type RawTransaction = TransactionRequest & { operation?: string }
@@ -66,6 +69,33 @@ const typesV2 = {
     { name: "source", type: "address" },
     { name: "id", type: "uint256" },
     { name: "metadata", type: "bytes" },
+  ],
+};
+
+const typesV3 = {
+  Cast: [
+    { name: "params", type: "CastParams" },
+    { name: "forwardParams", type: "CastForwardParams" },
+  ],
+  CastParams: [
+    { name: "actions", type: "Action[]" },
+    { name: "id", type: "uint256" },
+    { name: "avoSafeNonce", type: "int256" },
+    { name: "salt", type: "bytes32" },
+    { name: "source", type: "address" },
+    { name: "metadata", type: "bytes" },
+  ],
+  Action: [
+    { name: "target", type: "address" },
+    { name: "data", type: "bytes" },
+    { name: "value", type: "uint256" },
+    { name: "operation", type: "uint256" },
+  ],
+  CastForwardParams: [
+    { name: "gas", type: "uint256" },
+    { name: "validUntil", type: "uint256" },
+    { name: "validAfter", type: "uint256" },
+    { name: "gasPrice", type: "uint256" },
   ],
 };
 
@@ -155,6 +185,33 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const versionMajor = parse(version)?.major || 1;
     const isV2 = versionMajor === 2;
+    const isV3 = versionMajor === 3;
+
+    if (isV3) {
+      return {
+        params: {
+          actions: transactions.map(transaction => (
+            {
+              operation: transaction.operation || "0",
+              target: transaction.to,
+              data: transaction.data || '0x',
+              value: transaction.value ? transaction.value.toString() : '0'
+            }
+          )),
+          metadata: options && options.metadata ? options.metadata : '0x',
+          source: options && options.source ? options.source : '0x000000000000000000000000000000000000Cad0',
+          id: options && options.id ? options.id : '0',
+          salt: options && options.salt ? options.salt : '0x0000000000000000000000000000000000000000000000000000000000000000',
+          avoSafeNonce,
+        },
+        forwardParams :{
+          gas: options && options.gas ? options.gas : '0',
+          validUntil: options && options.validUntil ? options.validUntil : '0',
+          validAfter: options && options.validAfter ? options.validAfter : '0',
+          gasPrice: options && options.gasPrice ? options.gasPrice : '0',
+        }
+      }
+    }
 
     if (isV2) {
       return {
@@ -308,7 +365,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
 
     const versionMajor = parse(version)?.major || 1;
-    const isV2 = versionMajor === 2;
 
     // Creating domain for signing using gasless wallet address as the verifying contract
     const domain = {
@@ -320,7 +376,11 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
 
     // The named list of all type definitions
-    const types = isV2 ? typesV2 : typesV1
+    const types = {
+      1: typesV1,
+      2: typesV2,
+      3: typesV3,
+    }[versionMajor] || {}
 
     // Adding values for types mentioned
     const value = message
