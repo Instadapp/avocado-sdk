@@ -290,7 +290,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
         signature,
         message,
         signer: owner,
-        chainId: String(chainId),
+        targetChainId: String(chainId),
         dryRun: false,
         safe: options?.safeAddress || await this.getAddress()
      }
