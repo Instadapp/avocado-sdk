@@ -31,6 +31,7 @@ export interface SignatureOption {
   id?: string
   avoSafeNonce?: string | number
   salt?: string
+  safeAddress?: string
 }
 
 export type RawTransaction = TransactionRequest & { operation?: string }
@@ -204,7 +205,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
           salt: options && options.salt ? options.salt : '0x0000000000000000000000000000000000000000000000000000000000000000',
           avoSafeNonce,
         },
-        forwardParams :{
+        forwardParams: {
           gas: options && options.gas ? options.gas : '0',
           validUntil: options && options.validUntil ? options.validUntil : '0',
           validAfter: options && options.validAfter ? options.validAfter : '0',
@@ -285,11 +286,14 @@ class AvoSigner extends Signer implements TypedDataSigner {
     })
 
     const transactionHash = await this._avoProvider.send('txn_broadcast', [
-      signature,
-      message,
-      owner,
-      String(chainId),
-      false
+      {
+        signature,
+        message,
+        signer: owner,
+        chainId: String(chainId),
+        dryRun: false,
+        safe: options?.safeAddress || await this.getAddress()
+     }
     ])
 
     if (transactionHash === '0x') {
