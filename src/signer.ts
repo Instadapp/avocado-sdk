@@ -32,6 +32,7 @@ export interface SignatureOption {
   avoSafeNonce?: string | number
   salt?: string
   safeAddress?: string
+  ownerAddress?: string
 }
 
 export type RawTransaction = TransactionRequest & { operation?: string }
@@ -290,6 +291,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
         signature,
         message,
         signer: owner,
+        owner:  options?.ownerAddress || owner, 
         targetChainId: String(chainId),
         dryRun: false,
         safe: options?.safeAddress || await this.getAddress()
