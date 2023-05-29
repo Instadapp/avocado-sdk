@@ -32,7 +32,6 @@ export interface SignatureOption {
   avoSafeNonce?: string | number
   salt?: string
   safeAddress?: string
-  ownerAddress?: string
 }
 
 export type RawTransaction = TransactionRequest & { operation?: string }
@@ -108,7 +107,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   private _chainId: Promise<number> | undefined
   public customChainId: number | undefined
 
-  constructor(readonly signer: Signer, readonly provider = signer.provider) {
+  constructor(readonly signer: Signer, readonly provider = signer.provider, readonly ownerAddress: string|undefined = undefined) {
     super()
     this._polygonForwarder = getForwarderContract(137)
     this._avoProvider = getRpcProvider(AVOCADO_CHAIN_ID)
@@ -152,10 +151,17 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return this._gaslessWallet!.address
   }
 
-  async getOwnerAddress(): Promise<string> {
+  async getSignerAddress(): Promise<string> {
     return await this.signer.getAddress()
   }
 
+  async getOwnerAddress(): Promise<string> {
+    if(this.ownerAddress) {
+      return this.ownerAddress
+    }
+
+    return await this.signer.getAddress()
+  }
 
   async getSafeNonce(chainId: number): Promise<string> {
     const forwarder = getForwarderContract(chainId)
@@ -290,8 +296,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
       {
         signature,
         message,
-        signer: owner,
-        owner:  options?.ownerAddress || owner, 
+        signer: await this.getSignerAddress(), 
+        owner:  await this.getOwnerAddress(), 
         targetChainId: String(chainId),
         dryRun: false,
         safe: options?.safeAddress || await this.getAddress()
@@ -465,7 +471,11 @@ export function createSafe(signer: Signer, provider = signer.provider) {
     },
 
     async getOwnerAddress() {
-      return await signer.getAddress()
+      return await avoSigner.getOwnerAddress()
+    },
+
+    async getSignerAddress() {
+      return await avoSigner.getSignerAddress()
     },
 
     async getSafeAddress() {
