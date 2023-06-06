@@ -1,6 +1,6 @@
 {
   "name": "@instadapp/avocado",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "type": "module",
   "files": [
     "dist"
@@ -11,8 +11,9 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/avocado.js",
-      "require": "./dist/avocado.umd.cjs"
+      "require": "./dist/avocado.cjs"
     }
   },
   "scripts": {
