@@ -115,7 +115,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
   async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
     const result = await signTypedData(this.signer.provider as any,
-      await this.getOwnerAddress(),
+      await this.getSignerAddress(),
       {
         domain,
         types,
