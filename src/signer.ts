@@ -107,7 +107,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   private _chainId: Promise<number> | undefined
   public customChainId: number | undefined
 
-  constructor(readonly signer: Signer, readonly provider = signer.provider, readonly ownerAddress: string|undefined = undefined) {
+  constructor(readonly signer: Signer, readonly provider = signer.provider, readonly ownerAddress: string | undefined = undefined) {
     super()
     this._polygonForwarder = getForwarderContract(137)
     this._avoProvider = getRpcProvider(AVOCADO_CHAIN_ID)
@@ -156,7 +156,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async getOwnerAddress(): Promise<string> {
-    if(this.ownerAddress) {
+    if (this.ownerAddress) {
       return this.ownerAddress
     }
 
@@ -296,12 +296,12 @@ class AvoSigner extends Signer implements TypedDataSigner {
       {
         signature,
         message,
-        signer: await this.getSignerAddress(), 
-        owner:  await this.getOwnerAddress(), 
+        signer: await this.getSignerAddress(),
+        owner: await this.getOwnerAddress(),
         targetChainId: String(chainId),
         dryRun: false,
         safe: options?.safeAddress || await this.getAddress()
-     }
+      }
     ])
 
     if (transactionHash === '0x') {
@@ -401,14 +401,15 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 }
 
-export function createSafe(signer: Signer, provider = signer.provider) {
+export function createSafe(signer: Signer, provider = signer.provider, ownerAddress: string | undefined = undefined) {
   if (!provider) {
     throw new Error('Provider')
   }
 
   const avoSigner = new AvoSigner(
     signer,
-    provider
+    provider,
+    ownerAddress
   )
 
   return {
