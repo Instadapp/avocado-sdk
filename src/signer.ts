@@ -4,34 +4,47 @@ import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from '@ether
 import { Deferrable } from '@ethersproject/properties'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from '@ethersproject/solidity'
-import { BigNumber } from 'ethers'
-import { GaslessWallet, Forwarder, GaslessWallet__factory, Forwarder__factory } from './contracts'
+import { BigNumber, constants } from 'ethers'
+import { AvoWallet, AvoWallet__factory, AvoForwarder, AvoForwarder__factory } from './contracts'
 import { getRpcProvider } from './providers'
 import { parse } from 'semver';
 import { AVOCADO_CHAIN_ID, AVOCADO_FORWARDER_PROXY_ADDRESS } from './config'
 import { signTypedData } from './utils/signTypedData'
+import { AvoCoreStructs, IAvoWalletV1, IAvoWalletV2 } from './contracts/AvoForwarder'
 
-const forwardsInstances: Record<number, Forwarder> = {}
+const forwardsInstances: Record<number, AvoForwarder> = {}
 
 export const getForwarderContract = (chainId: number) => {
   if (!forwardsInstances[chainId]) {
-    forwardsInstances[chainId] = Forwarder__factory.connect(AVOCADO_FORWARDER_PROXY_ADDRESS, getRpcProvider(chainId))
+    forwardsInstances[chainId] = AvoForwarder__factory.connect(AVOCADO_FORWARDER_PROXY_ADDRESS, getRpcProvider(chainId))
   }
 
   return forwardsInstances[chainId]
 }
 
 export interface SignatureOption {
-  metadata?: string
-  source?: string
-  validUntil?: string
-  validAfter?: string
-  gas?: string
-  gasPrice?: string
-  id?: string
-  avoSafeNonce?: string | number
-  salt?: string
-  safeAddress?: string
+  /** generic additional metadata */
+  metadata?: string;
+  /** source address for referral system */
+  source?: string;
+  /** time in seconds until which the signature is valid and can be executed */
+  validUntil?: string;
+  /** time in seconds after which the signature is valid and can be executed */
+  validAfter?: string;
+  /** minimum amount of gas that the relayer (AvoForwarder) is expected to send along for successful execution */
+  gas?: string;
+  /** maximum gas price at which the signature is valid and can be executed. Not implemented yet. */
+  gasPrice?: string;
+  /** id for actions, e.g. 0 = CALL, 1 = MIXED (call and delegatecall), 20 = FLASHLOAN_CALL, 21 = FLASHLOAN_MIXED. 
+   *  Default value of 0 will work for all most common use-cases. */
+  id?: string;
+  /** sequential avoSafeNonce as current value on the smart wallet contract or set to `-1`to use a non-sequential nonce. 
+   *  Leave value as undefined to automatically use the next sequential nonce. */
+  avoSafeNonce?: string | number;
+  /** salt to customize non-sequential nonce (if `avoSafeNonce` is set to -1) */
+  salt?: string;
+  /** address of the Avocado smart wallet */
+  safeAddress?: string;
 }
 
 export type RawTransaction = TransactionRequest & { operation?: string }
@@ -101,8 +114,8 @@ const typesV3 = {
 };
 
 class AvoSigner extends Signer implements TypedDataSigner {
-  _gaslessWallet?: GaslessWallet
-  _polygonForwarder: Forwarder
+  _avoWallet?: AvoWallet
+  _polygonForwarder: AvoForwarder
   _avoProvider: StaticJsonRpcProvider
   private _chainId: Promise<number> | undefined
   public customChainId: number | undefined
@@ -130,25 +143,25 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async syncAccount(): Promise<void> {
-    if (!this._gaslessWallet) {
+    if (!this._avoWallet) {
       const owner = await this.getOwnerAddress()
       const safeAddress = await this._polygonForwarder.computeAddress(owner)
 
-      this._gaslessWallet = GaslessWallet__factory.connect(safeAddress, this.signer)
+      this._avoWallet = AvoWallet__factory.connect(safeAddress, this.signer)
     }
 
     if (this.provider) { this._chainId = this.provider.getNetwork().then(net => net.chainId) }
   }
 
-  async getGaslessWallet(targetChainId: number) {
+  async getAvoWallet(targetChainId: number) {
     const owner = await this.getOwnerAddress()
     const safeAddress = await this._polygonForwarder.computeAddress(owner)
-    return GaslessWallet__factory.connect(safeAddress, getRpcProvider(targetChainId))
+    return AvoWallet__factory.connect(safeAddress, getRpcProvider(targetChainId))
   }
 
   async getAddress(): Promise<string> {
     await this.syncAccount()
-    return this._gaslessWallet!.address
+    return this._avoWallet!.address
   }
 
   async getSignerAddress(): Promise<string> {
@@ -173,7 +186,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return avoSafeNonce
   }
 
-
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
 
@@ -183,10 +195,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     let version;
 
-    let targetChainGaslessWallet = await this.getGaslessWallet(targetChainId);
+    let targetChainAvoWallet = await this.getAvoWallet(targetChainId);
 
     try {
-      version = await targetChainGaslessWallet.DOMAIN_SEPARATOR_VERSION()
+      version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
     } catch (error) {
       version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
     }
@@ -279,8 +291,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
       throw new Error('Chain ID is required')
     }
 
-    const owner = await this.getOwnerAddress()
-
     const message = await this.generateSignatureMessage(
       transactions,
       chainId,
@@ -292,15 +302,21 @@ class AvoSigner extends Signer implements TypedDataSigner {
       chainId
     })
 
+    return this.broadcastSignedMessage({message, chainId, signature, safeAddress: options?.safeAddress});
+  }
+
+  async broadcastSignedMessage({ message, chainId, signature, safeAddress }: { message: any, chainId: number, signature: string, safeAddress?: string }) {
+    const owner = await this.getOwnerAddress()
+
     const transactionHash = await this._avoProvider.send('txn_broadcast', [
       {
         signature,
         message,
         signer: await this.getSignerAddress(),
-        owner: await this.getOwnerAddress(),
+        owner,
         targetChainId: String(chainId),
         dryRun: false,
-        safe: options?.safeAddress || await this.getAddress()
+        safe: safeAddress || await this.getAddress()
       }
     ])
 
@@ -337,6 +353,62 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
   }
 
+  async verify({ message, chainId, signature, safeAddress }: { message: any, chainId: number, signature: string, safeAddress?: string }) {
+    const forwarder = getForwarderContract(chainId)
+
+    // get avocado wallet version
+    let version;
+    let targetChainAvoWallet = AvoWallet__factory.connect(
+        safeAddress || await this.getAddress(), 
+        getRpcProvider(chainId)
+    );
+    try {
+      version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
+    } catch (error) {
+      version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+    }
+
+    const versionMajor = parse(version)?.major || 1;
+    const isV2 = versionMajor === 2;
+    const isV3 = versionMajor === 3;
+
+    // get owner of `safeAddress` for from param
+    const safeOwner = await targetChainAvoWallet.owner();
+
+    // note verify methods are expected to be called via .callStatic because otherwise they potentially
+    // would deploy the wallet if it is not deployed yet 
+    if(isV3) {
+      return forwarder.callStatic.verifyV3(
+        safeOwner, 
+        message.params as AvoCoreStructs.CastParamsStruct,
+        message.forwarderParams as AvoCoreStructs.CastForwardParamsStruct,
+        {
+          signature, 
+          signer: constants.AddressZero // will need to change this to support smart contract signatures
+        }
+      )
+    }
+
+    if(isV2) {
+      return forwarder.callStatic.verifyV2(
+        safeOwner, 
+        message.actions as IAvoWalletV2.ActionStruct[],
+        message.params as IAvoWalletV2.CastParamsStruct,
+        signature
+      )
+    }
+
+    return forwarder.callStatic.verifyV1(
+      safeOwner, 
+      message.actions as IAvoWalletV1.ActionStruct[],
+      message.validUntil,
+      message.gas,
+      message.source,
+      message.metadata,
+      signature
+    )
+  }
+
   signMessage(_message: any): Promise<string> {
     throw new Error('Method not implemented.')
   }
@@ -366,11 +438,11 @@ class AvoSigner extends Signer implements TypedDataSigner {
     let version;
 
     const forwarder = getForwarderContract(chainId)
-    let targetChainGaslessWallet = await this.getGaslessWallet(chainId);
+    let targetChainAvoWallet = await this.getAvoWallet(chainId);
 
     try {
-      version = await targetChainGaslessWallet.DOMAIN_SEPARATOR_VERSION()
-      name = await targetChainGaslessWallet.DOMAIN_SEPARATOR_NAME()
+      version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
+      name = await targetChainAvoWallet.DOMAIN_SEPARATOR_NAME()
     } catch (error) {
       version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
       name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
@@ -378,7 +450,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     const versionMajor = parse(version)?.major || 1;
 
-    // Creating domain for signing using gasless wallet address as the verifying contract
+    // Creating domain for signing using Avocado wallet address as the verifying contract
     const domain = {
       name,
       version,
@@ -413,14 +485,38 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
   )
 
   return {
+    /**
+     * Get the current AvoSigner
+     * 
+     * @returns current AvoSigner instance
+     */
     getSigner() {
       return avoSigner
     },
 
+    /**
+     * Generates the signature message for a set of `transactions` with the respective `options`. 
+     * This can be subsequently used as input for {@link buildSignature} or also be used in direct interaction
+     * with contracts to access methods not covered by the Avocado SDK itself.
+     *
+     * @param transactions - Transactions to be executed in the Avocado smart wallet. 
+     * @param targetChainId - The chain id of the network where the transactions will be executable
+     * @param options - Optional options to specify things such as time limiting validity, using a non-sequential nonce etc.
+     * @returns Object that can be fed into {@link buildSignature} or directly used for contract interaction
+     */
     async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
       return await avoSigner.generateSignatureMessage(transactions, targetChainId, options)
     },
 
+    /**
+     * Builds a valid signature from the returned value of {@link generateSignatureMessage}. 
+     * The returned signature can be used to execute the actions at the Avocado smart wallet.
+     * This will automatically trigger the user to sign the message.
+     *
+     * @param message - The previously generated message with {@link generateSignatureMessage}. 
+     * @param chainId - The chain id of the network where this signed transaction will be executable
+     * @returns A signed, executable message for an Avocado smart wallet
+     */
     async buildSignature(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, chainId: number) {
       return await avoSigner.buildSignature({
         message,
@@ -428,15 +524,57 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
       })
     },
 
+    /**
+     * Executes multiple `transactions` with the Avocado smart wallet,automatically triggering the user to sign the message for execution.
+     *
+     * @param transactions - Transactions to be executed in the Avocado smart wallet. 
+     * @param targetChainId - The chain id of the network where the transactions will be executed
+     * @param options - Optional options to specify things such as using a non-sequential nonce etc.
+     * @returns the TransactionResponse result
+     */
     async sendTransactions(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption): Promise<TransactionResponse> {
       return await avoSigner.sendTransactions(transactions, targetChainId, options)
     },
 
+    /**
+     * Executes a `transaction` with the Avocado smart wallet, automatically triggering the user to sign the message for execution.
+     *
+     * @param transaction - Transaction to be executed in the Avocado smart wallet. 
+     * @param targetChainId - The chain id of the network where the transactions will be executed
+     * @param options - Optional options to specify things such as using a non-sequential nonce etc.
+     * @returns the TransactionResponse result
+     */
     async sendTransaction(transaction: Deferrable<RawTransaction>, targetChainId?: number, options?: SignatureOption): Promise<TransactionResponse> {
       return await avoSigner.sendTransaction({
         ...transaction,
         chainId: targetChainId || await transaction.chainId
       }, options)
+    },
+
+    /**
+     * Broadcasts a previously signed message with valid signature.
+     *
+     * @param message - The previously generated message with {@link generateSignatureMessage}. 
+     * @param signature - The user signature for the message with {@link buildSignature}. 
+     * @param chainId - The chain id of the network where this signed transaction will be executable
+     * @param safeAddress - Optional address of the smart wallet in case it is not the one for the current signer
+     * @returns the TransactionResponse result
+     */
+    async broadcastSignedMessage(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, signature:string, chainId: number, safeAddress?: string): Promise<TransactionResponse> {
+      return await avoSigner.broadcastSignedMessage({message, signature, chainId, safeAddress})
+    },
+
+    /**
+     * Verifies the validity of a signature for a previously signed message.
+     *
+     * @param message - The previously generated message with {@link generateSignatureMessage}. 
+     * @param signature - The user signature for the message with {@link buildSignature}. 
+     * @param chainId - The chain id of the network where this signed transaction will be executable
+     * @param safeAddress - Optional address of the smart wallet in case it is not the one for the current signer
+     * @returns the TransactionResponse result
+     */
+    async verify(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, signature:string, chainId: number, safeAddress?: string): Promise<boolean> {
+      return await avoSigner.verify({message, signature, chainId, safeAddress})
     },
 
     async estimateFee(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption): Promise<{
@@ -459,6 +597,12 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
       }
     },
 
+    /**
+     * Get the current AvoSigner instance for a different chain id
+     * 
+     * @param chainId - The chain id of the network
+     * @returns AvoSigner for the respective `chainId`
+     */
     getSignerForChainId(chainId: number | string) {
       return new Proxy(avoSigner, {
         get(target, p, receiver) {
@@ -471,18 +615,39 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
       })
     },
 
+    /**
+     * Get the owner address of the current AvoSigner instance
+     * 
+     * @returns current AvoSigner instance owner's address
+     */
     async getOwnerAddress() {
       return await avoSigner.getOwnerAddress()
     },
 
+    /**
+     * Get the signer address of the current AvoSigner instance
+     * 
+     * @returns current AvoSigner instance signer's address
+     */
     async getSignerAddress() {
       return await avoSigner.getSignerAddress()
     },
 
+    /**
+     * Get the safe address of the current AvoSigner instance
+     * 
+     * @returns current avoSigner instance address
+     */
     async getSafeAddress() {
       return await avoSigner.getAddress()
     },
 
+    /**
+     * Get the current avoSafeNonce value at the smart wallet
+     * 
+     * @param chainId - The chain id of the network
+     * @returns current avoSafeNonce value
+     */
     async getSafeNonce(chainId: number | string) {
       return await avoSigner.getSafeNonce(Number(chainId))
     }

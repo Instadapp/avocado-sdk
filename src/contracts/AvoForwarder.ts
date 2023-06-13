@@ -84,9 +84,9 @@ export declare namespace AvoCoreStructs {
 
   export type CastForwardParamsStruct = {
     gas: PromiseOrValue<BigNumberish>;
-    validUntil: PromiseOrValue<BigNumberish>;
-    validAfter: PromiseOrValue<BigNumberish>;
     gasPrice: PromiseOrValue<BigNumberish>;
+    validAfter: PromiseOrValue<BigNumberish>;
+    validUntil: PromiseOrValue<BigNumberish>;
   };
 
   export type CastForwardParamsStructOutput = [
@@ -96,9 +96,9 @@ export declare namespace AvoCoreStructs {
     BigNumber
   ] & {
     gas: BigNumber;
-    validUntil: BigNumber;
-    validAfter: BigNumber;
     gasPrice: BigNumber;
+    validAfter: BigNumber;
+    validUntil: BigNumber;
   };
 
   export type SignatureParamsStruct = {
@@ -162,7 +162,7 @@ export declare namespace AvoForwarderStructs {
   };
 }
 
-export interface ForwarderInterface extends utils.Interface {
+export interface AvoForwarderInterface extends utils.Interface {
   functions: {
     "auths(address)": FunctionFragment;
     "avoFactory()": FunctionFragment;
@@ -598,12 +598,12 @@ export type OwnershipTransferredEvent = TypedEvent<
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
 
-export interface Forwarder extends BaseContract {
+export interface AvoForwarder extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: ForwarderInterface;
+  interface: AvoForwarderInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
