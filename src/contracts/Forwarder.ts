@@ -84,9 +84,9 @@ export declare namespace AvoCoreStructs {
 
   export type CastForwardParamsStruct = {
     gas: PromiseOrValue<BigNumberish>;
-    validUntil: PromiseOrValue<BigNumberish>;
-    validAfter: PromiseOrValue<BigNumberish>;
     gasPrice: PromiseOrValue<BigNumberish>;
+    validAfter: PromiseOrValue<BigNumberish>;
+    validUntil: PromiseOrValue<BigNumberish>;
   };
 
   export type CastForwardParamsStructOutput = [
@@ -96,9 +96,9 @@ export declare namespace AvoCoreStructs {
     BigNumber
   ] & {
     gas: BigNumber;
-    validUntil: BigNumber;
-    validAfter: BigNumber;
     gasPrice: BigNumber;
+    validAfter: BigNumber;
+    validUntil: BigNumber;
   };
 
   export type SignatureParamsStruct = {
