@@ -1,4 +1,6 @@
+import { Provider } from "@ethersproject/providers";
 import { Contract, Signer } from "ethers";
+import { parse } from "semver";
 import {
   AVOCADO_AUTHORITIES_LIST_PROXY_ADDRESS,
   AVOCADO_DEPOSIT_MANAGER_PROXY_ADDRESS,
@@ -28,6 +30,16 @@ import {
   AvoWalletV3__factory,
 } from "./contracts/factories";
 import { getRpcProvider } from "./providers";
+
+export enum AvoSafeVersion {
+  V1 = 1,
+  V2 = 2,
+  V3 = 3,
+}
+
+export enum AvoMultisigVersion {
+  V3 = 3,
+}
 
 class AvoContracts {
   private contractInstances: Record<string, Contract> = {};
@@ -113,7 +125,7 @@ class AvoContracts {
     return this.contractInstances[chainId] as AvoGasEstimationsHelper;
   }
 
-  multisigV3(address: string, signer: Signer) {
+  multisigV3(address: string, signer: Signer | Provider) {
     return AvoMultisigV3__factory.connect(address, signer);
   }
 
@@ -148,12 +160,72 @@ class AvoContracts {
     return this.contractInstances[chainId] as AvoVersionsRegistry;
   }
 
-  walletV2(address: string, signer: Signer) {
+  safeV2(address: string, signer: Signer | Provider) {
     return AvoWalletV2__factory.connect(address, signer);
   }
 
-  walletV3(address: string, signer: Signer) {
+  safeV3(address: string, signer: Signer | Provider) {
     return AvoWalletV3__factory.connect(address, signer);
+  }
+
+  async safeVersion(
+    chainId: number | string,
+    address: string
+  ): Promise<AvoSafeVersion> {
+    let version;
+
+    let targetChainAvoWallet = AvoWalletV3__factory.connect(
+      address,
+      getRpcProvider(chainId)
+    );
+
+    try {
+      version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION();
+    } catch (error) {
+      version = await this.forwarder(chainId).avoWalletVersion(
+        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+      );
+    }
+
+    const versionMajor = parse(version)?.major || 1;
+    switch (versionMajor) {
+      case 1:
+        return AvoSafeVersion.V1;
+      case 2:
+        return AvoSafeVersion.V2;
+      case 3:
+        return AvoSafeVersion.V3;
+      default:
+        throw new Error(`Unrecognized Avocado Safe Version: ${version}`);
+    }
+  }
+
+  async multisigVersion(
+    chainId: number | string,
+    address: string
+  ): Promise<AvoMultisigVersion> {
+    let version;
+
+    let targetChainAvoMultisig = AvoMultisigV3__factory.connect(
+      address,
+      getRpcProvider(chainId)
+    );
+
+    try {
+      version = await targetChainAvoMultisig.DOMAIN_SEPARATOR_VERSION();
+    } catch (error) {
+      version = await this.forwarder(chainId).avoMultisigVersion(
+        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+      );
+    }
+
+    const versionMajor = parse(version)?.major || 1;
+    switch (versionMajor) {
+      case 3:
+        return AvoMultisigVersion.V3;
+      default:
+        throw new Error(`Unrecognized Avocado Multisig Version: ${version}`);
+    }
   }
 }
 

@@ -5,7 +5,7 @@ import { Deferrable } from '@ethersproject/properties'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from '@ethersproject/solidity'
 import { BigNumber, constants } from 'ethers'
-import { avoContracts } from './contracts'
+import { avoContracts, AvoSafeVersion } from './contracts'
 import { getRpcProvider } from './providers'
 import { parse } from 'semver';
 import { AVOCADO_CHAIN_ID } from './config'
@@ -181,25 +181,11 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
 
-    const forwarder = avoContracts.forwarder(targetChainId)
-
     const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
 
-    let version;
+    const avoVersion = await avoContracts.safeVersion(targetChainId, await this.getAddress());
 
-    let targetChainAvoWallet = await this.getAvoWallet(targetChainId);
-
-    try {
-      version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
-    } catch (error) {
-      version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
-    }
-
-    const versionMajor = parse(version)?.major || 1;
-    const isV2 = versionMajor === 2;
-    const isV3 = versionMajor === 3;
-
-    if (isV3) {
+    if (avoVersion === AvoSafeVersion.V3) {
       return {
         params: {
           actions: transactions.map(transaction => (
@@ -225,7 +211,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       }
     }
 
-    if (isV2) {
+    if (avoVersion === AvoSafeVersion.V2) {
       return {
         actions: transactions.map(transaction => (
           {
@@ -245,7 +231,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
         avoSafeNonce,
       }
     }
-
 
     return {
       actions: transactions.map(transaction => (
@@ -349,27 +334,14 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const forwarder = avoContracts.forwarder(chainId)
 
     // get avocado wallet version
-    let version;
-    let targetChainAvoWallet = AvoWalletV3__factory.connect(
-        safeAddress || await this.getAddress(), 
-        getRpcProvider(chainId)
-    );
-    try {
-      version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
-    } catch (error) {
-      version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
-    }
-
-    const versionMajor = parse(version)?.major || 1;
-    const isV2 = versionMajor === 2;
-    const isV3 = versionMajor === 3;
+    const avoVersion = await avoContracts.safeVersion(chainId, safeAddress || await this.getAddress());
 
     // get owner of `safeAddress` for from param
-    const safeOwner = await targetChainAvoWallet.owner();
+    const safeOwner = await avoContracts.safeV3(safeAddress || await this.getAddress(), getRpcProvider(chainId)).owner();
 
     // note verify methods are expected to be called via .callStatic because otherwise they potentially
     // would deploy the wallet if it is not deployed yet 
-    if(isV3) {
+    if(avoVersion === AvoSafeVersion.V3) {
       return forwarder.callStatic.verifyV3(
         safeOwner, 
         message.params as AvoCoreStructs.CastParamsStruct,
@@ -381,7 +353,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       )
     }
 
-    if(isV2) {
+    if(avoVersion === AvoSafeVersion.V2) {
       return forwarder.callStatic.verifyV2(
         safeOwner, 
         message.actions as IAvoWalletV2.ActionStruct[],
@@ -642,6 +614,15 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
      */
     async getSafeNonce(chainId: number | string) {
       return await avoSigner.getSafeNonce(Number(chainId))
-    }
+    },
+
+    /**
+     * Get the safe version of the current AvoSigner instance
+     * 
+     * @returns current avoSigner instance version
+     */
+    async getSafeVersion(chainId: number | string) {
+      return await avoContracts.safeVersion(chainId, await avoSigner.getAddress());
+    },
   }
 }
