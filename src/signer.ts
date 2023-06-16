@@ -99,9 +99,9 @@ const typesV3 = {
   ],
   CastForwardParams: [
     { name: "gas", type: "uint256" },
-    { name: "validUntil", type: "uint256" },
-    { name: "validAfter", type: "uint256" },
     { name: "gasPrice", type: "uint256" },
+    { name: "validAfter", type: "uint256" },
+    { name: "validUntil", type: "uint256" },
   ],
 };
 
