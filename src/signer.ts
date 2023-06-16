@@ -5,22 +5,14 @@ import { Deferrable } from '@ethersproject/properties'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from '@ethersproject/solidity'
 import { BigNumber, constants } from 'ethers'
-import { AvoWallet, AvoWallet__factory, AvoForwarder, AvoForwarder__factory } from './contracts'
+import { avoContracts } from './contracts'
 import { getRpcProvider } from './providers'
 import { parse } from 'semver';
-import { AVOCADO_CHAIN_ID, AVOCADO_FORWARDER_PROXY_ADDRESS } from './config'
+import { AVOCADO_CHAIN_ID } from './config'
 import { signTypedData } from './utils/signTypedData'
-import { AvoCoreStructs, IAvoWalletV1, IAvoWalletV2 } from './contracts/AvoForwarder'
-
-const forwardsInstances: Record<number, AvoForwarder> = {}
-
-export const getForwarderContract = (chainId: number) => {
-  if (!forwardsInstances[chainId]) {
-    forwardsInstances[chainId] = AvoForwarder__factory.connect(AVOCADO_FORWARDER_PROXY_ADDRESS, getRpcProvider(chainId))
-  }
-
-  return forwardsInstances[chainId]
-}
+import { AvoCoreStructs, AvoForwarder, IAvoWalletV1, IAvoWalletV2 } from './contracts/AvoForwarder'
+import { AvoWalletV3__factory } from './contracts/factories'
+import { AvoWalletV3 } from './contracts/AvoWalletV3'
 
 export interface SignatureOption {
   /** generic additional metadata */
@@ -114,7 +106,7 @@ const typesV3 = {
 };
 
 class AvoSigner extends Signer implements TypedDataSigner {
-  _avoWallet?: AvoWallet
+  _avoWallet?: AvoWalletV3
   _polygonForwarder: AvoForwarder
   _avoProvider: StaticJsonRpcProvider
   private _chainId: Promise<number> | undefined
@@ -122,7 +114,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
   constructor(readonly signer: Signer, readonly provider = signer.provider, readonly ownerAddress: string | undefined = undefined) {
     super()
-    this._polygonForwarder = getForwarderContract(137)
+    this._polygonForwarder = avoContracts.forwarder(137)
     this._avoProvider = getRpcProvider(AVOCADO_CHAIN_ID)
   }
 
@@ -147,7 +139,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       const owner = await this.getOwnerAddress()
       const safeAddress = await this._polygonForwarder.computeAddress(owner)
 
-      this._avoWallet = AvoWallet__factory.connect(safeAddress, this.signer)
+      this._avoWallet = AvoWalletV3__factory.connect(safeAddress, this.signer)
     }
 
     if (this.provider) { this._chainId = this.provider.getNetwork().then(net => net.chainId) }
@@ -156,7 +148,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async getAvoWallet(targetChainId: number) {
     const owner = await this.getOwnerAddress()
     const safeAddress = await this._polygonForwarder.computeAddress(owner)
-    return AvoWallet__factory.connect(safeAddress, getRpcProvider(targetChainId))
+    return AvoWalletV3__factory.connect(safeAddress, getRpcProvider(targetChainId))
   }
 
   async getAddress(): Promise<string> {
@@ -177,7 +169,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async getSafeNonce(chainId: number): Promise<string> {
-    const forwarder = getForwarderContract(chainId)
+    const forwarder = avoContracts.forwarder(chainId)
 
     const owner = await this.getOwnerAddress()
 
@@ -189,7 +181,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount()
 
-    const forwarder = getForwarderContract(targetChainId)
+    const forwarder = avoContracts.forwarder(targetChainId)
 
     const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
 
@@ -354,11 +346,11 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async verify({ message, chainId, signature, safeAddress }: { message: any, chainId: number, signature: string, safeAddress?: string }) {
-    const forwarder = getForwarderContract(chainId)
+    const forwarder = avoContracts.forwarder(chainId)
 
     // get avocado wallet version
     let version;
-    let targetChainAvoWallet = AvoWallet__factory.connect(
+    let targetChainAvoWallet = AvoWalletV3__factory.connect(
         safeAddress || await this.getAddress(), 
         getRpcProvider(chainId)
     );
@@ -437,7 +429,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     let name;
     let version;
 
-    const forwarder = getForwarderContract(chainId)
+    const forwarder = avoContracts.forwarder(chainId)
     let targetChainAvoWallet = await this.getAvoWallet(chainId);
 
     try {

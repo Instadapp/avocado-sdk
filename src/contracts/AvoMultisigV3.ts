@@ -117,7 +117,7 @@ export declare namespace AvoCoreStructs {
   };
 }
 
-export interface AvoWalletInterface extends utils.Interface {
+export interface AvoMultisigV3Interface extends utils.Interface {
   functions: {
     "ACTION_TYPE_HASH()": FunctionFragment;
     "AUTHORIZED_FEE_COLLECTOR()": FunctionFragment;
@@ -131,26 +131,25 @@ export interface AvoWalletInterface extends utils.Interface {
     "DEFAULT_CHAIN_ID()": FunctionFragment;
     "DOMAIN_SEPARATOR_NAME()": FunctionFragment;
     "DOMAIN_SEPARATOR_VERSION()": FunctionFragment;
+    "MAX_SIGNERS_COUNT()": FunctionFragment;
     "TYPE_HASH()": FunctionFragment;
     "_callTargets((address,bytes,uint256,uint256)[],uint256)": FunctionFragment;
     "_getSigDigest(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),bytes32,bytes32)": FunctionFragment;
-    "addAuthorities(address[])": FunctionFragment;
-    "authorities(address)": FunctionFragment;
-    "avoAuthoritiesList()": FunctionFragment;
+    "addSigners(address[])": FunctionFragment;
     "avoForwarder()": FunctionFragment;
     "avoSafeNonce()": FunctionFragment;
+    "avoSignersList()": FunctionFragment;
     "avoVersionsRegistry()": FunctionFragment;
-    "cast(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256),(bytes,address))": FunctionFragment;
-    "castAuthorized(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256))": FunctionFragment;
+    "cast(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256),(bytes,address)[])": FunctionFragment;
+    "castAuthorized(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256),(bytes,address)[])": FunctionFragment;
     "domainSeparatorV4()": FunctionFragment;
     "executeOperation(address[],uint256[],uint256[],address,bytes)": FunctionFragment;
     "getSigDigest(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256))": FunctionFragment;
+    "getSigDigestAuthorized(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256))": FunctionFragment;
     "initialize(address)": FunctionFragment;
     "initializeWithVersion(address,address)": FunctionFragment;
-    "isAuthority(address)": FunctionFragment;
+    "isSigner(address)": FunctionFragment;
     "isValidSignature(bytes32,bytes)": FunctionFragment;
-    "nonSequentialNonce(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256))": FunctionFragment;
-    "nonSequentialNonceAuthorized(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256))": FunctionFragment;
     "nonSequentialNonces(bytes32)": FunctionFragment;
     "occupyAvoSafeNonces(uint88[])": FunctionFragment;
     "occupyNonSequentialNonces(bytes32[])": FunctionFragment;
@@ -158,14 +157,18 @@ export interface AvoWalletInterface extends utils.Interface {
     "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "owner()": FunctionFragment;
-    "reinitialize()": FunctionFragment;
-    "removeAuthorities(address[])": FunctionFragment;
     "removeSignedMessage(bytes32)": FunctionFragment;
+    "removeSigners(address[])": FunctionFragment;
+    "requiredSigners()": FunctionFragment;
+    "setRequiredSigners(uint8)": FunctionFragment;
     "signMessage(bytes32)": FunctionFragment;
+    "signers()": FunctionFragment;
+    "signersCount()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes,bool)": FunctionFragment;
-    "verify(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256),(bytes,address))": FunctionFragment;
+    "verify(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256),(bytes,address)[])": FunctionFragment;
+    "verifyAuthorized(((address,bytes,uint256,uint256)[],uint256,int256,bytes32,address,bytes),(uint256,uint256,uint256,uint256),(bytes,address)[])": FunctionFragment;
   };
 
   getFunction(
@@ -182,26 +185,25 @@ export interface AvoWalletInterface extends utils.Interface {
       | "DEFAULT_CHAIN_ID"
       | "DOMAIN_SEPARATOR_NAME"
       | "DOMAIN_SEPARATOR_VERSION"
+      | "MAX_SIGNERS_COUNT"
       | "TYPE_HASH"
       | "_callTargets"
       | "_getSigDigest"
-      | "addAuthorities"
-      | "authorities"
-      | "avoAuthoritiesList"
+      | "addSigners"
       | "avoForwarder"
       | "avoSafeNonce"
+      | "avoSignersList"
       | "avoVersionsRegistry"
       | "cast"
       | "castAuthorized"
       | "domainSeparatorV4"
       | "executeOperation"
       | "getSigDigest"
+      | "getSigDigestAuthorized"
       | "initialize"
       | "initializeWithVersion"
-      | "isAuthority"
+      | "isSigner"
       | "isValidSignature"
-      | "nonSequentialNonce"
-      | "nonSequentialNonceAuthorized"
       | "nonSequentialNonces"
       | "occupyAvoSafeNonces"
       | "occupyNonSequentialNonces"
@@ -209,14 +211,18 @@ export interface AvoWalletInterface extends utils.Interface {
       | "onERC1155Received"
       | "onERC721Received"
       | "owner"
-      | "reinitialize"
-      | "removeAuthorities"
       | "removeSignedMessage"
+      | "removeSigners"
+      | "requiredSigners"
+      | "setRequiredSigners"
       | "signMessage"
+      | "signers"
+      | "signersCount"
       | "supportsInterface"
       | "upgradeTo"
       | "upgradeToAndCall"
       | "verify"
+      | "verifyAuthorized"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -267,6 +273,10 @@ export interface AvoWalletInterface extends utils.Interface {
     functionFragment: "DOMAIN_SEPARATOR_VERSION",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "MAX_SIGNERS_COUNT",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "TYPE_HASH", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "_callTargets",
@@ -281,16 +291,8 @@ export interface AvoWalletInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "addAuthorities",
+    functionFragment: "addSigners",
     values: [PromiseOrValue<string>[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "authorities",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "avoAuthoritiesList",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "avoForwarder",
@@ -298,6 +300,10 @@ export interface AvoWalletInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "avoSafeNonce",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "avoSignersList",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -309,14 +315,15 @@ export interface AvoWalletInterface extends utils.Interface {
     values: [
       AvoCoreStructs.CastParamsStruct,
       AvoCoreStructs.CastForwardParamsStruct,
-      AvoCoreStructs.SignatureParamsStruct
+      AvoCoreStructs.SignatureParamsStruct[]
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "castAuthorized",
     values: [
       AvoCoreStructs.CastParamsStruct,
-      AvoCoreStructs.CastAuthorizedParamsStruct
+      AvoCoreStructs.CastAuthorizedParamsStruct,
+      AvoCoreStructs.SignatureParamsStruct[]
     ]
   ): string;
   encodeFunctionData(
@@ -341,6 +348,13 @@ export interface AvoWalletInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "getSigDigestAuthorized",
+    values: [
+      AvoCoreStructs.CastParamsStruct,
+      AvoCoreStructs.CastAuthorizedParamsStruct
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "initialize",
     values: [PromiseOrValue<string>]
   ): string;
@@ -349,26 +363,12 @@ export interface AvoWalletInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "isAuthority",
+    functionFragment: "isSigner",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "isValidSignature",
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "nonSequentialNonce",
-    values: [
-      AvoCoreStructs.CastParamsStruct,
-      AvoCoreStructs.CastForwardParamsStruct
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "nonSequentialNonceAuthorized",
-    values: [
-      AvoCoreStructs.CastParamsStruct,
-      AvoCoreStructs.CastAuthorizedParamsStruct
-    ]
   ): string;
   encodeFunctionData(
     functionFragment: "nonSequentialNonces",
@@ -413,20 +413,29 @@ export interface AvoWalletInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "reinitialize",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "removeAuthorities",
-    values: [PromiseOrValue<string>[]]
-  ): string;
-  encodeFunctionData(
     functionFragment: "removeSignedMessage",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
+    functionFragment: "removeSigners",
+    values: [PromiseOrValue<string>[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requiredSigners",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRequiredSigners",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "signMessage",
     values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(functionFragment: "signers", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "signersCount",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -449,7 +458,15 @@ export interface AvoWalletInterface extends utils.Interface {
     values: [
       AvoCoreStructs.CastParamsStruct,
       AvoCoreStructs.CastForwardParamsStruct,
-      AvoCoreStructs.SignatureParamsStruct
+      AvoCoreStructs.SignatureParamsStruct[]
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "verifyAuthorized",
+    values: [
+      AvoCoreStructs.CastParamsStruct,
+      AvoCoreStructs.CastAuthorizedParamsStruct,
+      AvoCoreStructs.SignatureParamsStruct[]
     ]
   ): string;
 
@@ -501,6 +518,10 @@ export interface AvoWalletInterface extends utils.Interface {
     functionFragment: "DOMAIN_SEPARATOR_VERSION",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "MAX_SIGNERS_COUNT",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "TYPE_HASH", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "_callTargets",
@@ -510,24 +531,17 @@ export interface AvoWalletInterface extends utils.Interface {
     functionFragment: "_getSigDigest",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "addAuthorities",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "authorities",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "avoAuthoritiesList",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "addSigners", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "avoForwarder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "avoSafeNonce",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "avoSignersList",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -551,25 +565,18 @@ export interface AvoWalletInterface extends utils.Interface {
     functionFragment: "getSigDigest",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getSigDigestAuthorized",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "initializeWithVersion",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "isAuthority",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isValidSignature",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "nonSequentialNonce",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "nonSequentialNonceAuthorized",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -598,19 +605,28 @@ export interface AvoWalletInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "reinitialize",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "removeAuthorities",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "removeSignedMessage",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "removeSigners",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requiredSigners",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setRequiredSigners",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "signMessage",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "signers", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "signersCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -623,24 +639,27 @@ export interface AvoWalletInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "verify", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "verifyAuthorized",
+    data: BytesLike
+  ): Result;
 
   events: {
-    "AuthorityAdded(address)": EventFragment;
-    "AuthorityRemoved(address)": EventFragment;
     "AvoSafeNonceOccupied(uint256)": EventFragment;
-    "CastExecuted(address,address,address,bytes)": EventFragment;
-    "CastFailed(address,address,address,string,bytes)": EventFragment;
+    "CastExecuted(address,address,address[],bytes)": EventFragment;
+    "CastFailed(address,address,address[],string,bytes)": EventFragment;
     "FeePaid(uint256)": EventFragment;
     "FeePayFailed(uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "NonSequentialNonceOccupied(bytes32)": EventFragment;
     "RemoveSignedMessage(bytes32)": EventFragment;
+    "RequiredSignersSet(uint8)": EventFragment;
     "SignedMessage(bytes32)": EventFragment;
+    "SignerAdded(address)": EventFragment;
+    "SignerRemoved(address)": EventFragment;
     "Upgraded(address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "AuthorityAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "AuthorityRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AvoSafeNonceOccupied"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CastExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CastFailed"): EventFragment;
@@ -649,30 +668,12 @@ export interface AvoWalletInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NonSequentialNonceOccupied"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RemoveSignedMessage"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RequiredSignersSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SignedMessage"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SignerAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SignerRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
-
-export interface AuthorityAddedEventObject {
-  authority: string;
-}
-export type AuthorityAddedEvent = TypedEvent<
-  [string],
-  AuthorityAddedEventObject
->;
-
-export type AuthorityAddedEventFilter = TypedEventFilter<AuthorityAddedEvent>;
-
-export interface AuthorityRemovedEventObject {
-  authority: string;
-}
-export type AuthorityRemovedEvent = TypedEvent<
-  [string],
-  AuthorityRemovedEventObject
->;
-
-export type AuthorityRemovedEventFilter =
-  TypedEventFilter<AuthorityRemovedEvent>;
 
 export interface AvoSafeNonceOccupiedEventObject {
   occupiedAvoSafeNonce: BigNumber;
@@ -688,11 +689,11 @@ export type AvoSafeNonceOccupiedEventFilter =
 export interface CastExecutedEventObject {
   source: string;
   caller: string;
-  signer: string;
+  signers: string[];
   metadata: string;
 }
 export type CastExecutedEvent = TypedEvent<
-  [string, string, string, string],
+  [string, string, string[], string],
   CastExecutedEventObject
 >;
 
@@ -701,12 +702,12 @@ export type CastExecutedEventFilter = TypedEventFilter<CastExecutedEvent>;
 export interface CastFailedEventObject {
   source: string;
   caller: string;
-  signer: string;
+  signers: string[];
   reason: string;
   metadata: string;
 }
 export type CastFailedEvent = TypedEvent<
-  [string, string, string, string, string],
+  [string, string, string[], string, string],
   CastFailedEventObject
 >;
 
@@ -758,12 +759,37 @@ export type RemoveSignedMessageEvent = TypedEvent<
 export type RemoveSignedMessageEventFilter =
   TypedEventFilter<RemoveSignedMessageEvent>;
 
+export interface RequiredSignersSetEventObject {
+  requiredSigners: number;
+}
+export type RequiredSignersSetEvent = TypedEvent<
+  [number],
+  RequiredSignersSetEventObject
+>;
+
+export type RequiredSignersSetEventFilter =
+  TypedEventFilter<RequiredSignersSetEvent>;
+
 export interface SignedMessageEventObject {
   messageHash: string;
 }
 export type SignedMessageEvent = TypedEvent<[string], SignedMessageEventObject>;
 
 export type SignedMessageEventFilter = TypedEventFilter<SignedMessageEvent>;
+
+export interface SignerAddedEventObject {
+  signer: string;
+}
+export type SignerAddedEvent = TypedEvent<[string], SignerAddedEventObject>;
+
+export type SignerAddedEventFilter = TypedEventFilter<SignerAddedEvent>;
+
+export interface SignerRemovedEventObject {
+  signer: string;
+}
+export type SignerRemovedEvent = TypedEvent<[string], SignerRemovedEventObject>;
+
+export type SignerRemovedEventFilter = TypedEventFilter<SignerRemovedEvent>;
 
 export interface UpgradedEventObject {
   newImplementation: string;
@@ -772,12 +798,12 @@ export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>;
 
 export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
-export interface AvoWallet extends BaseContract {
+export interface AvoMultisigV3 extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: AvoWalletInterface;
+  interface: AvoMultisigV3Interface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -825,6 +851,8 @@ export interface AvoWallet extends BaseContract {
 
     DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<[string]>;
 
+    MAX_SIGNERS_COUNT(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     TYPE_HASH(overrides?: CallOverrides): Promise<[string]>;
 
     _callTargets(
@@ -840,34 +868,30 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    addAuthorities(
-      authorities_: PromiseOrValue<string>[],
+    addSigners(
+      addSigners_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    authorities(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    avoAuthoritiesList(overrides?: CallOverrides): Promise<[string]>;
 
     avoForwarder(overrides?: CallOverrides): Promise<[string]>;
 
     avoSafeNonce(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    avoSignersList(overrides?: CallOverrides): Promise<[string]>;
 
     avoVersionsRegistry(overrides?: CallOverrides): Promise<[string]>;
 
     cast(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     castAuthorized(
       params_: AvoCoreStructs.CastParamsStruct,
       authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -888,6 +912,12 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getSigDigestAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     initialize(
       owner_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -895,12 +925,12 @@ export interface AvoWallet extends BaseContract {
 
     initializeWithVersion(
       owner_: PromiseOrValue<string>,
-      avoWalletVersion_: PromiseOrValue<string>,
+      avoMultisigVersion_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    isAuthority(
-      authority_: PromiseOrValue<string>,
+    isSigner(
+      signer_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -909,18 +939,6 @@ export interface AvoWallet extends BaseContract {
       signature: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[string] & { magicValue: string }>;
-
-    nonSequentialNonce(
-      params_: AvoCoreStructs.CastParamsStruct,
-      forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    nonSequentialNonceAuthorized(
-      params_: AvoCoreStructs.CastParamsStruct,
-      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
 
     nonSequentialNonces(
       arg0: PromiseOrValue<BytesLike>,
@@ -965,17 +983,20 @@ export interface AvoWallet extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
-    reinitialize(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    removeAuthorities(
-      authorities_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     removeSignedMessage(
       message_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    removeSigners(
+      removeSigners_: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    requiredSigners(overrides?: CallOverrides): Promise<[number]>;
+
+    setRequiredSigners(
+      requiredSigners_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -984,13 +1005,19 @@ export interface AvoWallet extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    signers(
+      overrides?: CallOverrides
+    ): Promise<[string[]] & { signers_: string[] }>;
+
+    signersCount(overrides?: CallOverrides): Promise<[number]>;
+
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     upgradeTo(
-      avoWalletImpl_: PromiseOrValue<string>,
+      avoMultisigImpl_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1004,7 +1031,14 @@ export interface AvoWallet extends BaseContract {
     verify(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    verifyAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
@@ -1033,6 +1067,8 @@ export interface AvoWallet extends BaseContract {
 
   DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<string>;
 
+  MAX_SIGNERS_COUNT(overrides?: CallOverrides): Promise<BigNumber>;
+
   TYPE_HASH(overrides?: CallOverrides): Promise<string>;
 
   _callTargets(
@@ -1048,34 +1084,30 @@ export interface AvoWallet extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  addAuthorities(
-    authorities_: PromiseOrValue<string>[],
+  addSigners(
+    addSigners_: PromiseOrValue<string>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  authorities(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  avoAuthoritiesList(overrides?: CallOverrides): Promise<string>;
 
   avoForwarder(overrides?: CallOverrides): Promise<string>;
 
   avoSafeNonce(overrides?: CallOverrides): Promise<BigNumber>;
+
+  avoSignersList(overrides?: CallOverrides): Promise<string>;
 
   avoVersionsRegistry(overrides?: CallOverrides): Promise<string>;
 
   cast(
     params_: AvoCoreStructs.CastParamsStruct,
     forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-    signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+    signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   castAuthorized(
     params_: AvoCoreStructs.CastParamsStruct,
     authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+    signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1096,6 +1128,12 @@ export interface AvoWallet extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getSigDigestAuthorized(
+    params_: AvoCoreStructs.CastParamsStruct,
+    authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   initialize(
     owner_: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1103,30 +1141,18 @@ export interface AvoWallet extends BaseContract {
 
   initializeWithVersion(
     owner_: PromiseOrValue<string>,
-    avoWalletVersion_: PromiseOrValue<string>,
+    avoMultisigVersion_: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  isAuthority(
-    authority_: PromiseOrValue<string>,
+  isSigner(
+    signer_: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   isValidSignature(
     hash: PromiseOrValue<BytesLike>,
     signature: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  nonSequentialNonce(
-    params_: AvoCoreStructs.CastParamsStruct,
-    forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  nonSequentialNonceAuthorized(
-    params_: AvoCoreStructs.CastParamsStruct,
-    authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
     overrides?: CallOverrides
   ): Promise<string>;
 
@@ -1173,17 +1199,20 @@ export interface AvoWallet extends BaseContract {
 
   owner(overrides?: CallOverrides): Promise<string>;
 
-  reinitialize(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  removeAuthorities(
-    authorities_: PromiseOrValue<string>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   removeSignedMessage(
     message_: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  removeSigners(
+    removeSigners_: PromiseOrValue<string>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  requiredSigners(overrides?: CallOverrides): Promise<number>;
+
+  setRequiredSigners(
+    requiredSigners_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1192,13 +1221,17 @@ export interface AvoWallet extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  signers(overrides?: CallOverrides): Promise<string[]>;
+
+  signersCount(overrides?: CallOverrides): Promise<number>;
+
   supportsInterface(
     interfaceId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   upgradeTo(
-    avoWalletImpl_: PromiseOrValue<string>,
+    avoMultisigImpl_: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1212,7 +1245,14 @@ export interface AvoWallet extends BaseContract {
   verify(
     params_: AvoCoreStructs.CastParamsStruct,
     forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-    signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+    signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  verifyAuthorized(
+    params_: AvoCoreStructs.CastParamsStruct,
+    authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+    signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -1243,6 +1283,8 @@ export interface AvoWallet extends BaseContract {
 
     DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<string>;
 
+    MAX_SIGNERS_COUNT(overrides?: CallOverrides): Promise<BigNumber>;
+
     TYPE_HASH(overrides?: CallOverrides): Promise<string>;
 
     _callTargets(
@@ -1258,28 +1300,23 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    addAuthorities(
-      authorities_: PromiseOrValue<string>[],
+    addSigners(
+      addSigners_: PromiseOrValue<string>[],
       overrides?: CallOverrides
     ): Promise<void>;
-
-    authorities(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    avoAuthoritiesList(overrides?: CallOverrides): Promise<string>;
 
     avoForwarder(overrides?: CallOverrides): Promise<string>;
 
     avoSafeNonce(overrides?: CallOverrides): Promise<BigNumber>;
+
+    avoSignersList(overrides?: CallOverrides): Promise<string>;
 
     avoVersionsRegistry(overrides?: CallOverrides): Promise<string>;
 
     cast(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: CallOverrides
     ): Promise<
       [boolean, string] & { success_: boolean; revertReason_: string }
@@ -1288,6 +1325,7 @@ export interface AvoWallet extends BaseContract {
     castAuthorized(
       params_: AvoCoreStructs.CastParamsStruct,
       authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: CallOverrides
     ): Promise<
       [boolean, string] & { success_: boolean; revertReason_: string }
@@ -1310,6 +1348,12 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getSigDigestAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     initialize(
       owner_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1317,30 +1361,18 @@ export interface AvoWallet extends BaseContract {
 
     initializeWithVersion(
       owner_: PromiseOrValue<string>,
-      avoWalletVersion_: PromiseOrValue<string>,
+      avoMultisigVersion_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    isAuthority(
-      authority_: PromiseOrValue<string>,
+    isSigner(
+      signer_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     isValidSignature(
       hash: PromiseOrValue<BytesLike>,
       signature: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    nonSequentialNonce(
-      params_: AvoCoreStructs.CastParamsStruct,
-      forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    nonSequentialNonceAuthorized(
-      params_: AvoCoreStructs.CastParamsStruct,
-      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -1387,15 +1419,20 @@ export interface AvoWallet extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<string>;
 
-    reinitialize(overrides?: CallOverrides): Promise<void>;
-
-    removeAuthorities(
-      authorities_: PromiseOrValue<string>[],
+    removeSignedMessage(
+      message_: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    removeSignedMessage(
-      message_: PromiseOrValue<BytesLike>,
+    removeSigners(
+      removeSigners_: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    requiredSigners(overrides?: CallOverrides): Promise<number>;
+
+    setRequiredSigners(
+      requiredSigners_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1404,13 +1441,17 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    signers(overrides?: CallOverrides): Promise<string[]>;
+
+    signersCount(overrides?: CallOverrides): Promise<number>;
+
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     upgradeTo(
-      avoWalletImpl_: PromiseOrValue<string>,
+      avoMultisigImpl_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1424,26 +1465,19 @@ export interface AvoWallet extends BaseContract {
     verify(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    verifyAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: CallOverrides
     ): Promise<boolean>;
   };
 
   filters: {
-    "AuthorityAdded(address)"(
-      authority?: PromiseOrValue<string> | null
-    ): AuthorityAddedEventFilter;
-    AuthorityAdded(
-      authority?: PromiseOrValue<string> | null
-    ): AuthorityAddedEventFilter;
-
-    "AuthorityRemoved(address)"(
-      authority?: PromiseOrValue<string> | null
-    ): AuthorityRemovedEventFilter;
-    AuthorityRemoved(
-      authority?: PromiseOrValue<string> | null
-    ): AuthorityRemovedEventFilter;
-
     "AvoSafeNonceOccupied(uint256)"(
       occupiedAvoSafeNonce?: PromiseOrValue<BigNumberish> | null
     ): AvoSafeNonceOccupiedEventFilter;
@@ -1451,30 +1485,30 @@ export interface AvoWallet extends BaseContract {
       occupiedAvoSafeNonce?: PromiseOrValue<BigNumberish> | null
     ): AvoSafeNonceOccupiedEventFilter;
 
-    "CastExecuted(address,address,address,bytes)"(
+    "CastExecuted(address,address,address[],bytes)"(
       source?: PromiseOrValue<string> | null,
       caller?: PromiseOrValue<string> | null,
-      signer?: PromiseOrValue<string> | null,
+      signers?: null,
       metadata?: null
     ): CastExecutedEventFilter;
     CastExecuted(
       source?: PromiseOrValue<string> | null,
       caller?: PromiseOrValue<string> | null,
-      signer?: PromiseOrValue<string> | null,
+      signers?: null,
       metadata?: null
     ): CastExecutedEventFilter;
 
-    "CastFailed(address,address,address,string,bytes)"(
+    "CastFailed(address,address,address[],string,bytes)"(
       source?: PromiseOrValue<string> | null,
       caller?: PromiseOrValue<string> | null,
-      signer?: PromiseOrValue<string> | null,
+      signers?: null,
       reason?: null,
       metadata?: null
     ): CastFailedEventFilter;
     CastFailed(
       source?: PromiseOrValue<string> | null,
       caller?: PromiseOrValue<string> | null,
-      signer?: PromiseOrValue<string> | null,
+      signers?: null,
       reason?: null,
       metadata?: null
     ): CastFailedEventFilter;
@@ -1508,12 +1542,31 @@ export interface AvoWallet extends BaseContract {
       messageHash?: PromiseOrValue<BytesLike> | null
     ): RemoveSignedMessageEventFilter;
 
+    "RequiredSignersSet(uint8)"(
+      requiredSigners?: PromiseOrValue<BigNumberish> | null
+    ): RequiredSignersSetEventFilter;
+    RequiredSignersSet(
+      requiredSigners?: PromiseOrValue<BigNumberish> | null
+    ): RequiredSignersSetEventFilter;
+
     "SignedMessage(bytes32)"(
       messageHash?: PromiseOrValue<BytesLike> | null
     ): SignedMessageEventFilter;
     SignedMessage(
       messageHash?: PromiseOrValue<BytesLike> | null
     ): SignedMessageEventFilter;
+
+    "SignerAdded(address)"(
+      signer?: PromiseOrValue<string> | null
+    ): SignerAddedEventFilter;
+    SignerAdded(signer?: PromiseOrValue<string> | null): SignerAddedEventFilter;
+
+    "SignerRemoved(address)"(
+      signer?: PromiseOrValue<string> | null
+    ): SignerRemovedEventFilter;
+    SignerRemoved(
+      signer?: PromiseOrValue<string> | null
+    ): SignerRemovedEventFilter;
 
     "Upgraded(address)"(
       newImplementation?: PromiseOrValue<string> | null
@@ -1552,6 +1605,8 @@ export interface AvoWallet extends BaseContract {
 
     DOMAIN_SEPARATOR_VERSION(overrides?: CallOverrides): Promise<BigNumber>;
 
+    MAX_SIGNERS_COUNT(overrides?: CallOverrides): Promise<BigNumber>;
+
     TYPE_HASH(overrides?: CallOverrides): Promise<BigNumber>;
 
     _callTargets(
@@ -1567,34 +1622,30 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    addAuthorities(
-      authorities_: PromiseOrValue<string>[],
+    addSigners(
+      addSigners_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
-
-    authorities(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    avoAuthoritiesList(overrides?: CallOverrides): Promise<BigNumber>;
 
     avoForwarder(overrides?: CallOverrides): Promise<BigNumber>;
 
     avoSafeNonce(overrides?: CallOverrides): Promise<BigNumber>;
+
+    avoSignersList(overrides?: CallOverrides): Promise<BigNumber>;
 
     avoVersionsRegistry(overrides?: CallOverrides): Promise<BigNumber>;
 
     cast(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     castAuthorized(
       params_: AvoCoreStructs.CastParamsStruct,
       authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1615,6 +1666,12 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getSigDigestAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     initialize(
       owner_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1622,30 +1679,18 @@ export interface AvoWallet extends BaseContract {
 
     initializeWithVersion(
       owner_: PromiseOrValue<string>,
-      avoWalletVersion_: PromiseOrValue<string>,
+      avoMultisigVersion_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    isAuthority(
-      authority_: PromiseOrValue<string>,
+    isSigner(
+      signer_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isValidSignature(
       hash: PromiseOrValue<BytesLike>,
       signature: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    nonSequentialNonce(
-      params_: AvoCoreStructs.CastParamsStruct,
-      forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    nonSequentialNonceAuthorized(
-      params_: AvoCoreStructs.CastParamsStruct,
-      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1692,17 +1737,20 @@ export interface AvoWallet extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    reinitialize(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    removeAuthorities(
-      authorities_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     removeSignedMessage(
       message_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    removeSigners(
+      removeSigners_: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    requiredSigners(overrides?: CallOverrides): Promise<BigNumber>;
+
+    setRequiredSigners(
+      requiredSigners_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1711,13 +1759,17 @@ export interface AvoWallet extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    signers(overrides?: CallOverrides): Promise<BigNumber>;
+
+    signersCount(overrides?: CallOverrides): Promise<BigNumber>;
+
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     upgradeTo(
-      avoWalletImpl_: PromiseOrValue<string>,
+      avoMultisigImpl_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1731,7 +1783,14 @@ export interface AvoWallet extends BaseContract {
     verify(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    verifyAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
@@ -1779,6 +1838,8 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    MAX_SIGNERS_COUNT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     TYPE_HASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     _callTargets(
@@ -1794,23 +1855,16 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    addAuthorities(
-      authorities_: PromiseOrValue<string>[],
+    addSigners(
+      addSigners_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    authorities(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    avoAuthoritiesList(
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     avoForwarder(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     avoSafeNonce(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    avoSignersList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     avoVersionsRegistry(
       overrides?: CallOverrides
@@ -1819,13 +1873,14 @@ export interface AvoWallet extends BaseContract {
     cast(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     castAuthorized(
       params_: AvoCoreStructs.CastParamsStruct,
       authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1846,6 +1901,12 @@ export interface AvoWallet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getSigDigestAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     initialize(
       owner_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1853,30 +1914,18 @@ export interface AvoWallet extends BaseContract {
 
     initializeWithVersion(
       owner_: PromiseOrValue<string>,
-      avoWalletVersion_: PromiseOrValue<string>,
+      avoMultisigVersion_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    isAuthority(
-      authority_: PromiseOrValue<string>,
+    isSigner(
+      signer_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isValidSignature(
       hash: PromiseOrValue<BytesLike>,
       signature: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    nonSequentialNonce(
-      params_: AvoCoreStructs.CastParamsStruct,
-      forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    nonSequentialNonceAuthorized(
-      params_: AvoCoreStructs.CastParamsStruct,
-      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1923,17 +1972,20 @@ export interface AvoWallet extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    reinitialize(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    removeAuthorities(
-      authorities_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     removeSignedMessage(
       message_: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeSigners(
+      removeSigners_: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    requiredSigners(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    setRequiredSigners(
+      requiredSigners_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1942,13 +1994,17 @@ export interface AvoWallet extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    signers(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    signersCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     upgradeTo(
-      avoWalletImpl_: PromiseOrValue<string>,
+      avoMultisigImpl_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1962,7 +2018,14 @@ export interface AvoWallet extends BaseContract {
     verify(
       params_: AvoCoreStructs.CastParamsStruct,
       forwardParams_: AvoCoreStructs.CastForwardParamsStruct,
-      signatureParams_: AvoCoreStructs.SignatureParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    verifyAuthorized(
+      params_: AvoCoreStructs.CastParamsStruct,
+      authorizedParams_: AvoCoreStructs.CastAuthorizedParamsStruct,
+      signaturesParams_: AvoCoreStructs.SignatureParamsStruct[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
