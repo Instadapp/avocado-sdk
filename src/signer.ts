@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { TransactionResponse, Provider, TransactionRequest } from '@ethersproject/abstract-provider'
+import { TransactionResponse, Provider, TransactionRequest, TransactionReceipt } from '@ethersproject/abstract-provider'
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
 import { Deferrable } from '@ethersproject/properties'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -11,7 +11,7 @@ import { parse } from 'semver';
 import { AVOCADO_CHAIN_ID } from './config'
 import { signTypedData } from './utils/signTypedData'
 import { AvoCoreStructs, AvoForwarder, IAvoWalletV1, IAvoWalletV2 } from './contracts/AvoForwarder'
-import { AvoWalletV3__factory } from './contracts/factories'
+import { AvoForwarder__factory, AvoWalletV3__factory } from './contracts/factories'
 import { AvoWalletV3 } from './contracts/AvoWalletV3'
 
 export interface SignatureOption {
@@ -313,7 +313,9 @@ class AvoSigner extends Signer implements TypedDataSigner {
       tx = await new Promise(resolve => setTimeout(resolve, 2000))
     }
 
-    if (tx) { return tx }
+    if (tx) { 
+      return tx 
+    }
 
     return {
       from: owner,
@@ -371,6 +373,29 @@ class AvoSigner extends Signer implements TypedDataSigner {
       message.metadata,
       signature
     )
+  }
+
+  async getTransactionReceiptStatus(txReceipt: TransactionReceipt) {
+    const iface = AvoForwarder__factory.createInterface();
+
+    let executeFailedLog = txReceipt.logs.find(
+      (l) =>
+        l.topics[0] ===
+        "0x420a063f564b9a9600709d5d1e36535a3edcb1eede9c459720dd684b6d76f75e"
+    );
+
+    if(!executeFailedLog) {
+      return {success: true , error: undefined}
+    }
+    
+    let error;
+    try {
+      error = iface.parseLog(executeFailedLog).args[4];
+    } catch (error) {
+      console.warn("avocado-sdk: Parsing error log failed");
+    }
+
+    return {success: false, error}
   }
 
   signMessage(_message: any): Promise<string> {
@@ -623,6 +648,18 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
      */
     async getSafeVersion(chainId: number | string) {
       return await avoContracts.safeVersion(chainId, await avoSigner.getAddress());
+    },
+
+    /**
+     * Get the status of a transaction receipt with success flag and error message
+     * 
+     * @param txReceipt the transaction receipt obtained e.g. by using `sendTransaction()` with returned `tx.wait()`
+     * @returns success flag and if false, also returns the error message as emitted by the `ExecuteFailed` event
+     */
+    async getTransactionReceiptStatus(txReceipt: TransactionReceipt): Promise<{ 
+      success: boolean; error: string  | undefined
+    }> {
+      return await avoSigner.getTransactionReceiptStatus(txReceipt);
     },
   }
 }
