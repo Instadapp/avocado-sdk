@@ -43,11 +43,11 @@ class AvoContracts {
     return this.contractInstances[chainId] as AvoForwarder;
   }
 
-  multisigV3(address: string, signer: Signer | Provider) {
+  multisigV3(address: string, signer: Signer) {
     return AvoMultisigV3__factory.connect(address, signer);
   }
 
-  safeV3(address: string, signer: Signer | Provider) {
+  safeV3(address: string, signer: Signer) {
     return AvoWalletV3__factory.connect(address, signer);
   }
 
