@@ -162,7 +162,7 @@ export declare namespace AvoForwarderStructs {
   };
 }
 
-export interface ForwarderInterface extends utils.Interface {
+export interface AvoForwarderInterface extends utils.Interface {
   functions: {
     "auths(address)": FunctionFragment;
     "avoFactory()": FunctionFragment;
@@ -598,12 +598,12 @@ export type OwnershipTransferredEvent = TypedEvent<
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
 
-export interface Forwarder extends BaseContract {
+export interface AvoForwarder extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: ForwarderInterface;
+  interface: AvoForwarderInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
