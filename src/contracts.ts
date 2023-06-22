@@ -40,7 +40,7 @@ class AvoContracts {
       );
     }
 
-    return this.contractInstances[chainId] as AvoForwarder;
+    return this.contractInstances[contractKey] as AvoForwarder;
   }
 
   multisigV3(address: string, signer: Signer) {
