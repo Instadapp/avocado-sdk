@@ -339,7 +339,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const avoVersion = await avoContracts.safeVersion(chainId, safeAddress || await this.getAddress());
 
     // get owner of `safeAddress` for from param
-    const safeOwner = await avoContracts.safeV3(safeAddress || await this.getAddress(), getRpcProvider(chainId)).owner();
+    const safeOwner = await avoContracts.safeV3(safeAddress || await this.getAddress(), this.signer).owner();
 
     // note verify methods are expected to be called via .callStatic because otherwise they potentially
     // would deploy the wallet if it is not deployed yet 
