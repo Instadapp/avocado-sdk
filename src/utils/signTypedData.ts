@@ -4,6 +4,7 @@ import { hexlify } from '@ethersproject/bytes';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import type { TypedData } from './typedData';
 import { getTypedDataMessage } from './typedData';
+import { _TypedDataEncoder } from '@ethersproject/hash';
 
 export async function signTypedData(
   provider: JsonRpcProvider,
@@ -48,7 +49,19 @@ export async function signTypedData(
     if (typeof error === 'string' && error.startsWith('Error: Transaction was rejected')) {
       return { cancelled: true };
     }
+  }
+
+  try {
+    const method = 'personl_sign';
+    const signature = await provider.send(method, [_TypedDataEncoder.encode(data.domain, data.types, data.value), address.toLowerCase()]);
+
+    return { method, signature };
+  } catch (error) {
+    if (typeof error === 'string' && error.startsWith('Error: Transaction was rejected')) {
+      return { cancelled: true };
+    }
 
     throw new Error(typeof error === 'string' ? error : 'An error occured.');
   }
+
 }
