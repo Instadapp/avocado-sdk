@@ -53,6 +53,10 @@ export async function signTypedData(
 
   try {
     const method = 'personl_sign';
+    console.log([
+      address.toLowerCase(),
+      _TypedDataEncoder.encode(data.domain, data.types, data.value)
+    ])
     const signature = await provider.send(method, [address.toLowerCase(), _TypedDataEncoder.encode(data.domain, data.types, data.value)]);
 
     return { method, signature };
