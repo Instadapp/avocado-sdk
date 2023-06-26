@@ -65,6 +65,8 @@ export async function signTypedData(
       return { cancelled: true };
     }
 
+    console.log(error);
+
     throw new Error(typeof error === 'string' ? error : 'An error occured.');
   }
 
