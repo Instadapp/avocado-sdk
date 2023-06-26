@@ -52,11 +52,7 @@ export async function signTypedData(
   }
 
   try {
-    const method = 'personl_sign';
-    console.log([
-      address.toLowerCase(),
-      _TypedDataEncoder.encode(data.domain, data.types, data.value)
-    ])
+    const method = 'personal_sign';
     const signature = await provider.send(method, [address.toLowerCase(), _TypedDataEncoder.encode(data.domain, data.types, data.value)]);
 
     return { method, signature };
@@ -64,8 +60,6 @@ export async function signTypedData(
     if (typeof error === 'string' && error.startsWith('Error: Transaction was rejected')) {
       return { cancelled: true };
     }
-
-    console.log(error);
 
     throw new Error(typeof error === 'string' ? error : 'An error occured.');
   }
