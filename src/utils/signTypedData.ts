@@ -49,19 +49,8 @@ export async function signTypedData(
     if (typeof error === 'string' && error.startsWith('Error: Transaction was rejected')) {
       return { cancelled: true };
     }
-  }
-
-  try {
-    const method = 'personal_sign';
-    const signature = await provider.send(method, [address.toLowerCase(), _TypedDataEncoder.encode(data.domain, data.types, data.value)]);
-
-    return { method, signature };
-  } catch (error) {
-    if (typeof error === 'string' && error.startsWith('Error: Transaction was rejected')) {
-      return { cancelled: true };
-    }
 
     throw new Error(typeof error === 'string' ? error : 'An error occured.');
-  }
 
+  }
 }
