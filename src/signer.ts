@@ -13,6 +13,7 @@ import { signTypedData } from './utils/signTypedData'
 import { AvoCoreStructs, AvoForwarder, IAvoWalletV1, IAvoWalletV2 } from './contracts/AvoForwarder'
 import { AvoWalletV3__factory } from './contracts/factories'
 import { AvoWalletV3 } from './contracts/AvoWalletV3'
+import { _TypedDataEncoder } from 'ethers/lib/utils'
 
 export interface SignatureOption {
   /** generic additional metadata */
@@ -285,6 +286,46 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async broadcastSignedMessage({ message, chainId, signature, safeAddress }: { message: any, chainId: number, signature: string, safeAddress?: string }) {
     const owner = await this.getOwnerAddress()
 
+    let digestHash
+    {
+      let name;
+      let version;
+
+      const forwarder = avoContracts.forwarder(chainId)
+      let targetChainAvoWallet = await this.getAvoWallet(chainId);
+
+      try {
+        version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
+        name = await targetChainAvoWallet.DOMAIN_SEPARATOR_NAME()
+      } catch (error) {
+        version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+        name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+      }
+
+      const versionMajor = parse(version)?.major || 1;
+
+      // Creating domain for signing using Avocado wallet address as the verifying contract
+      const domain = {
+        name,
+        version,
+        chainId: String(AVOCADO_CHAIN_ID),
+        salt: keccak256(['uint256'], [chainId]),
+        verifyingContract: await this.getAddress()
+      }
+
+      // The named list of all type definitions
+      const types = {
+        1: typesV1,
+        2: typesV2,
+        3: typesV3,
+      }[versionMajor] || {}
+
+      // Adding values for types mentioned
+      const value = message
+
+      digestHash = await _TypedDataEncoder.hash(domain, types, value)
+    }
+
     const transactionHash = await this._avoProvider.send('txn_broadcast', [
       {
         signature,
@@ -293,7 +334,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
         owner,
         targetChainId: String(chainId),
         dryRun: false,
-        safe: safeAddress || await this.getAddress()
+        safe: safeAddress || await this.getAddress(),
+        digestHash
       }
     ])
 
