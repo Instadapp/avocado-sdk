@@ -47,7 +47,7 @@ jobs:
           AVOCADO_FORWARDER_PROXY_ADDRESS: "0x8CDaAC0371a443985c6Faf07938dDAa7A5818674"
 
       - name: Publish Dev Release
-        uses: JS-DevTools/npm-publish@v1
+        uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_AUTH_TOKEN }}
           tag: dev
