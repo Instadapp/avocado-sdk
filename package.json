@@ -20,7 +20,8 @@
     "generate:contracts": "rimraf src/contracts && typechain --target=ethers-v5 'abi/*.json' --out-dir 'src/contracts'",
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepublishOnly": "yarn && npm run build"
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
