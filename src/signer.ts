@@ -4,7 +4,7 @@ import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from '@ether
 import { Deferrable } from '@ethersproject/properties'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from '@ethersproject/solidity'
-import { BigNumber, constants } from 'ethers'
+import { BigNumber, constants, ethers } from 'ethers'
 import { avoContracts, AvoSafeVersion } from './contracts'
 import { getRpcProvider } from './providers'
 import { parse } from 'semver';
@@ -13,7 +13,6 @@ import { signTypedData } from './utils/signTypedData'
 import { AvoCoreStructs, AvoForwarder, IAvoWalletV1, IAvoWalletV2 } from './contracts/AvoForwarder'
 import { AvoWalletV3__factory } from './contracts/factories'
 import { AvoWalletV3 } from './contracts/AvoWalletV3'
-import { _TypedDataEncoder } from 'ethers/lib/utils'
 
 export interface SignatureOption {
   /** generic additional metadata */
@@ -323,7 +322,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       // Adding values for types mentioned
       const value = message
 
-      digestHash = await _TypedDataEncoder.hash(domain, types, value)
+      digestHash = await ethers.utils._TypedDataEncoder.hash(domain, types, value)
     }
 
     const transactionHash = await this._avoProvider.send('txn_broadcast', [
