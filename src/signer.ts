@@ -4,6 +4,8 @@ import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from '@ether
 import { Deferrable } from '@ethersproject/properties'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from '@ethersproject/solidity'
+import { Bytes, hexlify } from "@ethersproject/bytes";
+import { toUtf8Bytes } from "@ethersproject/strings";
 import { BigNumber, constants, ethers } from 'ethers'
 import { avoContracts, AvoSafeVersion } from './contracts'
 import { getRpcProvider } from './providers'
@@ -279,7 +281,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       chainId
     })
 
-    return this.broadcastSignedMessage({message, chainId, signature, safeAddress: options?.safeAddress});
+    return this.broadcastSignedMessage({ message, chainId, signature, safeAddress: options?.safeAddress });
   }
 
   async broadcastSignedMessage({ message, chainId, signature, safeAddress }: { message: any, chainId: number, signature: string, safeAddress?: string }) {
@@ -354,8 +356,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
       tx = await new Promise(resolve => setTimeout(resolve, 2000))
     }
 
-    if (tx) { 
-      return tx 
+    if (tx) {
+      return tx
     }
 
     return {
@@ -384,21 +386,21 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
     // note verify methods are expected to be called via .callStatic because otherwise they potentially
     // would deploy the wallet if it is not deployed yet 
-    if(avoVersion === AvoSafeVersion.V3) {
+    if (avoVersion === AvoSafeVersion.V3) {
       return forwarder.callStatic.verifyV3(
-        safeOwner, 
+        safeOwner,
         message.params as AvoCoreStructs.CastParamsStruct,
         message.forwarderParams as AvoCoreStructs.CastForwardParamsStruct,
         {
-          signature, 
+          signature,
           signer: constants.AddressZero // will need to change this to support smart contract signatures
         }
       )
     }
 
-    if(avoVersion === AvoSafeVersion.V2) {
+    if (avoVersion === AvoSafeVersion.V2) {
       return forwarder.callStatic.verifyV2(
-        safeOwner, 
+        safeOwner,
         message.actions as IAvoWalletV2.ActionStruct[],
         message.params as IAvoWalletV2.CastParamsStruct,
         signature
@@ -406,7 +408,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
 
     return forwarder.callStatic.verifyV1(
-      safeOwner, 
+      safeOwner,
       message.actions as IAvoWalletV1.ActionStruct[],
       message.validUntil,
       message.gas,
@@ -416,8 +418,12 @@ class AvoSigner extends Signer implements TypedDataSigner {
     )
   }
 
-  signMessage(_message: any): Promise<string> {
-    throw new Error('Method not implemented.')
+  async signMessage(message: Bytes | string): Promise<string> {
+    const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
+    
+    const address = await this.getSignerAddress();
+
+    return await (this.provider as any).send("personal_sign", [hexlify(data), address.toLowerCase()]);
   }
 
   signTransaction(_transaction: any): Promise<string> {
@@ -567,8 +573,8 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
      * @param safeAddress - Optional address of the smart wallet in case it is not the one for the current signer
      * @returns the TransactionResponse result
      */
-    async broadcastSignedMessage(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, signature:string, chainId: number, safeAddress?: string): Promise<TransactionResponse> {
-      return await avoSigner.broadcastSignedMessage({message, signature, chainId, safeAddress})
+    async broadcastSignedMessage(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, signature: string, chainId: number, safeAddress?: string): Promise<TransactionResponse> {
+      return await avoSigner.broadcastSignedMessage({ message, signature, chainId, safeAddress })
     },
 
     /**
@@ -580,8 +586,8 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
      * @param safeAddress - Optional address of the smart wallet in case it is not the one for the current signer
      * @returns the TransactionResponse result
      */
-    async verify(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, signature:string, chainId: number, safeAddress?: string): Promise<boolean> {
-      return await avoSigner.verify({message, signature, chainId, safeAddress})
+    async verify(message: Awaited<ReturnType<typeof avoSigner.generateSignatureMessage>>, signature: string, chainId: number, safeAddress?: string): Promise<boolean> {
+      return await avoSigner.verify({ message, signature, chainId, safeAddress })
     },
 
     async estimateFee(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption): Promise<{
