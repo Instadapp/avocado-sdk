@@ -2,7 +2,7 @@
 import { TransactionResponse, Provider, TransactionRequest } from '@ethersproject/abstract-provider'
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
 import { Deferrable } from '@ethersproject/properties'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcSigner, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from '@ethersproject/solidity'
 import { Bytes, hexlify } from "@ethersproject/bytes";
 import { toUtf8Bytes } from "@ethersproject/strings";
@@ -127,7 +127,9 @@ class AvoSigner extends Signer implements TypedDataSigner {
         domain,
         types,
         value
-      })
+      },
+      this.signer as JsonRpcSigner
+    )
 
     if (!result.signature) {
       throw Error("Failed to get signature");
