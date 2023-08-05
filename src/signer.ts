@@ -2,7 +2,7 @@
 import { TransactionResponse, Provider, TransactionRequest } from '@ethersproject/abstract-provider'
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
 import { Deferrable } from '@ethersproject/properties'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcSigner, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { keccak256 } from '@ethersproject/solidity'
 import { Bytes, hexlify } from "@ethersproject/bytes";
 import { toUtf8Bytes } from "@ethersproject/strings";
@@ -121,6 +121,14 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
+    if("privateKey" in this.signer) {
+      return await (this.signer as Signer as JsonRpcSigner)._signTypedData(
+        domain,
+        types,
+        value
+      );
+    }
+
     const result = await signTypedData(this.signer.provider as any,
       await this.getSignerAddress(),
       {
