@@ -81,53 +81,18 @@ await erc20.transfer("0x910E413DBF3F6276Fe8213fF656726bDc142E08E", 69420)
 ```
 
 ```ts
-import { AvocadoSafeProvider } from '@instadapp/avocado'
-import { ethers } from 'ethers'
-import Web3 from 'web3'
+import { Wallet, ethers } from "ethers"
 
-const ethereum = new AvocadoSafeProvider({ chainId: 137 }) // window.etherem
-await ethereum.enable()
+const wallet = new Wallet(
+    "PK_HERE", 
+    new ethers.providers.JsonRpcProvider("https://rpc.avocado.instadapp.io")
+)
 
-const provider = new ethers.providers.Web3Provider(ethereum, "any")
-const web3 = new Web3(ethereum)
+const safe = createSafe(wallet)
 
-console.log(await provider.listAccounts())
-console.log(await provider.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
-console.log(await web3.eth.getBalance("0x910E413DBF3F6276Fe8213fF656726bDc142E08E"))
-```
-
-```ts
-import { AvocadoInjectedConnector } from '@instadapp/avocado'
-
-const avocado = new AvocadoInjectedConnector({ chainId: 137 })
-
-const { activate } = useWeb3() // web3-react v6 or @instadapp/vue-web3
-await activate(avocado)
-```
-
-```ts
-import { AvocadoSafeProvider } from '@instadapp/avocado'
-
-const providerOptions = {
-    'custom-avocado': {
-      display: {
-        logo: SVGavocado,
-        name: 'Avocado',
-        description: '',
-      },
-      package: AvocadoSafeProvider,
-
-      options: {
-        chainId: 137,
-      },
-
-      connector: async (ProviderPackage, options) => {
-        const provider = new ProviderPackage(options)
-
-        await provider.enable()
-
-        return provider
-      },
-    }
-}
+await safe.sendTransaction({
+    to: "0x910E413DBF3F6276Fe8213fF656726bDc142E08E",
+    value: 0,
+    chainId: 137
+})
 ```
