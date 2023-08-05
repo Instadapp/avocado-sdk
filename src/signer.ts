@@ -121,15 +121,21 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
+    if("privateKey" in this.signer) {
+      return await (this.signer as Signer as JsonRpcSigner)._signTypedData(
+        domain,
+        types,
+        value
+      );
+    }
+
     const result = await signTypedData(this.signer.provider as any,
       await this.getSignerAddress(),
       {
         domain,
         types,
         value
-      },
-      this.signer as JsonRpcSigner
-    )
+      })
 
     if (!result.signature) {
       throw Error("Failed to get signature");
