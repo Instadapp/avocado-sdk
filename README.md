@@ -96,3 +96,12 @@ await safe.sendTransaction({
     chainId: 137
 })
 ```
+
+
+```ts
+import { setRpcUrls } from '@instadapp/avocado'
+
+setRpcUrls({
+    137: "https://polygon-rpc.com",
+})
+```

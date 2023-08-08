@@ -25,3 +25,9 @@ export const getRpcProvider = (chainId: number | string) => {
 
     return rpcInstances[chainId]
 }
+
+export const setRpcUrls = (rpcUrls: { [chainId: number]: string }) => {
+    Object.assign(RPC_URLS, rpcUrls)
+    
+    RPC_URLS[AVOCADO_CHAIN_ID] = AVOCADO_RPC
+}
