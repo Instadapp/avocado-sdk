@@ -13,6 +13,7 @@ export const RPC_URLS: { [chainId: number]: string } = {
     56: 'https://rpc.ankr.com/bsc',
     1101 : 'https://rpc.ankr.com/polygon_zkevm',
     1313161554: "https://mainnet.aurora.dev",
+    8453: "https://rpc.ankr.com/base",
 }
 
 const rpcInstances: Record<string, StaticJsonRpcProvider> = {}
