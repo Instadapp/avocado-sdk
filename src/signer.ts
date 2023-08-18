@@ -80,33 +80,6 @@ const typesV2 = {
   ],
 };
 
-const typesV3 = {
-  Cast: [
-    { name: "params", type: "CastParams" },
-    { name: "forwardParams", type: "CastForwardParams" },
-  ],
-  CastParams: [
-    { name: "actions", type: "Action[]" },
-    { name: "id", type: "uint256" },
-    { name: "avoSafeNonce", type: "int256" },
-    { name: "salt", type: "bytes32" },
-    { name: "source", type: "address" },
-    { name: "metadata", type: "bytes" },
-  ],
-  Action: [
-    { name: "target", type: "address" },
-    { name: "data", type: "bytes" },
-    { name: "value", type: "uint256" },
-    { name: "operation", type: "uint256" },
-  ],
-  CastForwardParams: [
-    { name: "gas", type: "uint256" },
-    { name: "gasPrice", type: "uint256" },
-    { name: "validAfter", type: "uint256" },
-    { name: "validUntil", type: "uint256" },
-  ],
-};
-
 class AvoSigner extends Signer implements TypedDataSigner {
   _avoWallet?: AvoWalletV3
   _polygonForwarder: AvoForwarder
@@ -114,7 +87,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   private _chainId: Promise<number> | undefined
   public customChainId: number | undefined
 
-  constructor(readonly signer: Signer, readonly provider = signer.provider, readonly ownerAddress: string | undefined = undefined) {
+  constructor(readonly signer: Signer, readonly provider = signer.provider) {
     super()
     this._polygonForwarder = avoContracts.forwarder(137)
     this._avoProvider = getRpcProvider(AVOCADO_CHAIN_ID)
@@ -130,7 +103,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     }
 
     const result = await signTypedData(this.signer.provider as any,
-      await this.getSignerAddress(),
+      await this.getOwnerAddress(),
       {
         domain,
         types,
@@ -166,15 +139,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return this._avoWallet!.address
   }
 
-  async getSignerAddress(): Promise<string> {
-    return await this.signer.getAddress()
-  }
-
   async getOwnerAddress(): Promise<string> {
-    if (this.ownerAddress) {
-      return this.ownerAddress
-    }
-
     return await this.signer.getAddress()
   }
 
@@ -194,32 +159,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
 
     const avoVersion = await avoContracts.safeVersion(targetChainId, await this.getAddress());
-
-    if (avoVersion === AvoSafeVersion.V3) {
-      return {
-        params: {
-          actions: transactions.map(transaction => (
-            {
-              operation: transaction.operation || "0",
-              target: transaction.to,
-              data: transaction.data || '0x',
-              value: transaction.value ? transaction.value.toString() : '0'
-            }
-          )),
-          metadata: options && options.metadata ? options.metadata : '0x',
-          source: options && options.source ? options.source : '0x000000000000000000000000000000000000Cad0',
-          id: options && options.id ? options.id : '0',
-          salt: options && options.salt ? options.salt : '0x0000000000000000000000000000000000000000000000000000000000000000',
-          avoSafeNonce,
-        },
-        forwardParams: {
-          gas: options && options.gas ? options.gas : '0',
-          validUntil: options && options.validUntil ? options.validUntil : '0',
-          validAfter: options && options.validAfter ? options.validAfter : '0',
-          gasPrice: options && options.gasPrice ? options.gasPrice : '0',
-        }
-      }
-    }
 
     if (avoVersion === AvoSafeVersion.V2) {
       return {
@@ -326,7 +265,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
       const types = {
         1: typesV1,
         2: typesV2,
-        3: typesV3,
       }[versionMajor] || {}
 
       // Adding values for types mentioned
@@ -339,7 +277,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
       {
         signature,
         message,
-        signer: await this.getSignerAddress(),
         owner,
         targetChainId: String(chainId),
         dryRun: false,
@@ -429,7 +366,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async signMessage(message: Bytes | string): Promise<string> {
     const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
     
-    const address = await this.getSignerAddress();
+    const address = await this.getOwnerAddress();
 
     return await (this.provider as any).send("personal_sign", [hexlify(data), address.toLowerCase()]);
   }
@@ -484,7 +421,6 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const types = {
       1: typesV1,
       2: typesV2,
-      3: typesV3,
     }[versionMajor] || {}
 
     // Adding values for types mentioned
@@ -494,15 +430,14 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 }
 
-export function createSafe(signer: Signer, provider = signer.provider, ownerAddress: string | undefined = undefined) {
+export function createSafe(signer: Signer, provider = signer.provider) {
   if (!provider) {
     throw new Error('Provider')
   }
 
   const avoSigner = new AvoSigner(
     signer,
-    provider,
-    ownerAddress
+    provider
   )
 
   return {
@@ -643,15 +578,6 @@ export function createSafe(signer: Signer, provider = signer.provider, ownerAddr
      */
     async getOwnerAddress() {
       return await avoSigner.getOwnerAddress()
-    },
-
-    /**
-     * Get the signer address of the current AvoSigner instance
-     * 
-     * @returns current AvoSigner instance signer's address
-     */
-    async getSignerAddress() {
-      return await avoSigner.getSignerAddress()
     },
 
     /**
