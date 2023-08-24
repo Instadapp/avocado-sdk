@@ -39,6 +39,9 @@ export interface SignatureOption {
   salt?: string;
   /** address of the Avocado smart wallet */
   safeAddress?: string;
+
+  name?: string;
+  version?: string;
 }
 
 export type RawTransaction = TransactionRequest & { operation?: string }
@@ -94,7 +97,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async _signTypedData(domain: TypedDataDomain, types: Record<string, TypedDataField[]>, value: Record<string, any>): Promise<string> {
-    if("privateKey" in this.signer) {
+    if ("privateKey" in this.signer) {
       return await (this.signer as Signer as JsonRpcSigner)._signTypedData(
         domain,
         types,
@@ -117,10 +120,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return result.signature
   }
 
-  async syncAccount(): Promise<void> {
+  async syncAccount(options?: Pick<SignatureOption, 'safeAddress'>): Promise<void> {
     if (!this._avoWallet) {
       const owner = await this.getOwnerAddress()
-      const safeAddress = await this._polygonForwarder.computeAddress(owner)
+      const safeAddress = options?.safeAddress || await this._polygonForwarder.computeAddress(owner)
 
       this._avoWallet = AvoWalletV3__factory.connect(safeAddress, this.signer)
     }
@@ -154,11 +157,15 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
-    await this.syncAccount()
+    await this.syncAccount(options)
 
     const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
 
-    const avoVersion = await avoContracts.safeVersion(targetChainId, await this.getAddress());
+    const avoVersion = options?.version
+      ? parse(options.version)?.major || 1
+        ? AvoSafeVersion.V1
+        : AvoSafeVersion.V2
+      : await avoContracts.safeVersion(targetChainId, options?.safeAddress || await this.getAddress());
 
     if (avoVersion === AvoSafeVersion.V2) {
       return {
@@ -205,7 +212,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
   }
 
   async sendTransactions(transactions: Deferrable<RawTransaction>[], targetChainId?: Deferrable<number>, options?: SignatureOption): Promise<TransactionResponse> {
-    await this.syncAccount()
+    await this.syncAccount(options)
 
     if (await this._chainId !== AVOCADO_CHAIN_ID) {
       throw new Error(`Signer provider chain id should be ${AVOCADO_CHAIN_ID}`)
@@ -223,31 +230,31 @@ class AvoSigner extends Signer implements TypedDataSigner {
       options
     );
 
-    const signature = await this._buildValidSignature({
+    const signature = await this.buildSignature({
       message,
-      chainId
-    })
+      chainId,
+    }, options)
 
     return this.broadcastSignedMessage({ message, chainId, signature, safeAddress: options?.safeAddress });
   }
 
-  async broadcastSignedMessage({ message, chainId, signature, safeAddress }: { message: any, chainId: number, signature: string, safeAddress?: string }) {
+  async broadcastSignedMessage({ message, chainId, signature, safeAddress, name, version }: { message: any, chainId: number, signature: string, safeAddress?: string, name?: string, version?: string }) {
     const owner = await this.getOwnerAddress()
 
     let digestHash
     {
-      let name;
-      let version;
 
-      const forwarder = avoContracts.forwarder(chainId)
-      let targetChainAvoWallet = await this.getAvoWallet(chainId);
+      if (!name || !version) {
+        const forwarder = avoContracts.forwarder(chainId)
+        let targetChainAvoWallet = await this.getAvoWallet(chainId);
 
-      try {
-        version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
-        name = await targetChainAvoWallet.DOMAIN_SEPARATOR_NAME()
-      } catch (error) {
-        version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
-        name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+        try {
+          version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
+          name = await targetChainAvoWallet.DOMAIN_SEPARATOR_NAME()
+        } catch (error) {
+          version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+          name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+        }
       }
 
       const versionMajor = parse(version)?.major || 1;
@@ -258,7 +265,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
         version,
         chainId: String(AVOCADO_CHAIN_ID),
         salt: keccak256(['uint256'], [chainId]),
-        verifyingContract: await this.getAddress()
+        verifyingContract: safeAddress || await this.getAddress()
       }
 
       // The named list of all type definitions
@@ -270,7 +277,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       // Adding values for types mentioned
       const value = message
 
-      digestHash = await ethers.utils._TypedDataEncoder.hash(domain, types, value)
+      digestHash = ethers.utils._TypedDataEncoder.hash(domain, types, value)
     }
 
     const transactionHash = await this._avoProvider.send('txn_broadcast', [
@@ -365,7 +372,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
   async signMessage(message: Bytes | string): Promise<string> {
     const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
-    
+
     const address = await this.getOwnerAddress();
 
     return await (this.provider as any).send("personal_sign", [hexlify(data), address.toLowerCase()]);
@@ -379,31 +386,23 @@ class AvoSigner extends Signer implements TypedDataSigner {
     return this
   }
 
-  async buildSignature({ message, chainId }: { message: any, chainId: number }) {
-    return await this._buildValidSignature({ message, chainId })
-  }
-
-  async _buildValidSignature({
-    message,
-    chainId,
-  }: {
-    message: any,
-    chainId: number,
-  }): Promise<string> {
-    await this.syncAccount()
-
-    let name;
-    let version;
+  async buildSignature({ message, chainId }: { message: any, chainId: number }, options?: SignatureOption) {
+    await this.syncAccount(options)
 
     const forwarder = avoContracts.forwarder(chainId)
     let targetChainAvoWallet = await this.getAvoWallet(chainId);
 
-    try {
-      version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
-      name = await targetChainAvoWallet.DOMAIN_SEPARATOR_NAME()
-    } catch (error) {
-      version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
-      name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+    let name = options?.name
+    let version = options?.version
+
+    if (!name || !version) {
+      try {
+        version = await targetChainAvoWallet.DOMAIN_SEPARATOR_VERSION()
+        name = await targetChainAvoWallet.DOMAIN_SEPARATOR_NAME()
+      } catch (error) {
+        version = await forwarder.avoWalletVersion('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+        name = await forwarder.avoWalletVersionName('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+      }
     }
 
     const versionMajor = parse(version)?.major || 1;
@@ -414,7 +413,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
       version,
       chainId: String(AVOCADO_CHAIN_ID),
       salt: keccak256(['uint256'], [chainId]),
-      verifyingContract: await this.getAddress()
+      verifyingContract: options?.safeAddress || await this.getAddress()
     }
 
     // The named list of all type definitions
