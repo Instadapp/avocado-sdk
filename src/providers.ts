@@ -2,7 +2,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { AVOCADO_CHAIN_ID, AVOCADO_RPC } from './config'
 
 export const RPC_URLS: { [chainId: number]: string } = {
-    1: 'https://eth.meowrpc.com',
+    1: 'https://eth.drpc.org',
     137: 'https://polygon-rpc.com',
     43114: 'https://api.avax.network/ext/bc/C/rpc',
     250: 'https://rpc.ftm.tools',
