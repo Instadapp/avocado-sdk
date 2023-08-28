@@ -162,7 +162,7 @@ class AvoSigner extends Signer implements TypedDataSigner {
     const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
 
     const avoVersion = options?.version
-      ? parse(options.version)?.major || 1
+      ? (parse(options.version)?.major || 1) === 1
         ? AvoSafeVersion.V1
         : AvoSafeVersion.V2
       : await avoContracts.safeVersion(targetChainId, options?.safeAddress || await this.getAddress());
