@@ -13,7 +13,7 @@ export const RPC_URLS: { [chainId: number]: string } = {
     56: 'https://bsc-dataseed.binance.org',
     1101 : 'https://zkevm-rpc.com',
     1313161554: "https://mainnet.aurora.dev",
-    8453: "https://developer-access-mainnet.base.org",
+    8453: "https://mainnet.base.org",
 }
 
 const rpcInstances: Record<string, StaticJsonRpcProvider> = {}
