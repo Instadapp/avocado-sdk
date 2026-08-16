@@ -47,8 +47,10 @@ export interface SignatureOption {
 
 export type RawTransaction = TransactionRequest & { operation?: string }
 
-// EIP-7825 caps a single transaction at 2^24 gas.
+// EIP-7825 caps a single transaction at 2^24 gas. Enforced on mainnet since
+// Fusaka and on OP Stack chains since Upgrade 19 (Karst).
 const MAX_TX_GAS_LIMIT = 16_777_216
+const MAX_TX_GAS_LIMIT_CHAIN_IDS = [1, 10, 8453]
 
 const typesV1 = {
   Cast: [
@@ -163,8 +165,8 @@ class AvoSigner extends Signer implements TypedDataSigner {
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount(options)
 
-    if (options?.gas && BigNumber.from(options.gas).gt(MAX_TX_GAS_LIMIT)) {
-      throw new Error(`options.gas exceeds the max per-transaction gas limit of ${MAX_TX_GAS_LIMIT}`)
+    if (options?.gas && MAX_TX_GAS_LIMIT_CHAIN_IDS.includes(Number(targetChainId)) && BigNumber.from(options.gas).gt(MAX_TX_GAS_LIMIT)) {
+      throw new Error(`options.gas exceeds the max per-transaction gas limit of ${MAX_TX_GAS_LIMIT} on chain ${targetChainId}`)
     }
 
     const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
