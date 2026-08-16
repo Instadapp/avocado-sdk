@@ -25,7 +25,8 @@ export interface SignatureOption {
   validUntil?: string;
   /** time in seconds after which the signature is valid and can be executed */
   validAfter?: string;
-  /** minimum amount of gas that the relayer (AvoForwarder) is expected to send along for successful execution */
+  /** minimum amount of gas that the relayer (AvoForwarder) is expected to send along for successful execution.
+   *  Must not exceed the max per-transaction gas limit of 2^24. */
   gas?: string;
   /** maximum gas price at which the signature is valid and can be executed. Not implemented yet. */
   gasPrice?: string;
@@ -45,6 +46,9 @@ export interface SignatureOption {
 }
 
 export type RawTransaction = TransactionRequest & { operation?: string }
+
+// EIP-7825 caps a single transaction at 2^24 gas.
+const MAX_TX_GAS_LIMIT = 16_777_216
 
 const typesV1 = {
   Cast: [
@@ -158,6 +162,10 @@ class AvoSigner extends Signer implements TypedDataSigner {
 
   async generateSignatureMessage(transactions: Deferrable<RawTransaction>[], targetChainId: number, options?: SignatureOption) {
     await this.syncAccount(options)
+
+    if (options?.gas && BigNumber.from(options.gas).gt(MAX_TX_GAS_LIMIT)) {
+      throw new Error(`options.gas exceeds the max per-transaction gas limit of ${MAX_TX_GAS_LIMIT}`)
+    }
 
     const avoSafeNonce = options && typeof options.avoSafeNonce !== 'undefined' ? String(options.avoSafeNonce) : await this.getSafeNonce(targetChainId)
 
